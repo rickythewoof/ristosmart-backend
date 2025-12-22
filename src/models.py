@@ -65,6 +65,7 @@ class MenuItem(db.Model):
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
     price = db.Column(db.Float, nullable=False)
+    tax_amount = db.Column(db.Float, nullable=True)
     category = db.Column(db.String(20), nullable=False)
     is_available = db.Column(db.Boolean, default=True)
     preparation_time = db.Column(db.Integer, nullable=False)

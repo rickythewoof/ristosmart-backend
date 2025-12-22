@@ -10,9 +10,10 @@ from models import db, User
 from auth import ROLES
 from datetime import datetime, timezone
 
-from ..auth import (
+from auth import (
     role_required,
-    permission_required
+    permission_required,
+    authentication_required
 )
 
 auth_bp = Blueprint('auth', __name__)
@@ -144,7 +145,7 @@ def register():
 
 
 @auth_bp.route('/me', methods=['GET'])
-@jwt_required()
+@authentication_required()
 def get_current_user():
     """Get current user info from token"""
     try:
@@ -218,7 +219,7 @@ def get_user(user_id):
         }), 500
 
 @auth_bp.route('/roles', methods=['GET'])
-@jwt_required()
+@authentication_required()
 def get_roles():
     """Get available roles and their permissions"""
     claims = get_jwt()
@@ -269,7 +270,7 @@ def refresh():
 
 
 @auth_bp.route('/logout', methods=['POST'])
-@jwt_required()
+@authentication_required()
 def logout():
     """Logout user (client-side token removal)"""
     return jsonify({

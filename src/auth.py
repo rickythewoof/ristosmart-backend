@@ -21,6 +21,20 @@ ROLES = {
     }
 }
 
+def authentication_required():
+    """
+    Decorator to ensure the user is authenticated via JWT.
+    Usage: @authentication_required
+    """
+    def decorator(fn):
+        @wraps(fn)
+        def wrapper(*args, **kwargs):
+            verify_jwt_in_request()
+            return fn(*args, **kwargs)
+        return wrapper
+    return decorator
+
+
 def permission_required(permission):
     """
     Decorator to check if user has the required permission.
