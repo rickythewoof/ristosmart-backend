@@ -16,6 +16,7 @@ menu_bp = Blueprint('menu', __name__)
 class MenuItemSchema(Schema):
     name = fields.Str(required=True, validate=lambda x: 1 <= len(x) <= 100)
     description = fields.Str(allow_none=True)
+    image_url = fields.Str(allow_none=True)
     price = fields.Float(required=True, validate=lambda x: x >= 0)
     tax_amount = fields.Float(allow_none=True, validate=lambda x: x >= 0 and x <=1)
     category = fields.Str(required=True, validate=lambda x: x in ['appetizer', 'main', 'dessert', 'beverage', 'side'])
@@ -264,6 +265,9 @@ def update_menu_item(menu_id):
             if 'description' in data:
                 update_fields.append("description = %s")
                 update_values.append(data['description'])
+            if 'image_url' in data:
+                update_fields.append("image_url = %s")
+                update_values.append(data['image_url'])
             if 'price' in data:
                 update_fields.append("price = %s")
                 update_values.append(float(data['price']))
@@ -299,6 +303,7 @@ def update_menu_item(menu_id):
                     'id': row_dict['id'],
                     'name': row_dict['name'],
                     'description': row_dict['description'],
+                    'image_url': row_dict['image_url'],
                     'price': float(row_dict['price']) if row_dict['price'] else 0,
                     'category': row_dict['category'],
                     'is_available': row_dict['is_available'],

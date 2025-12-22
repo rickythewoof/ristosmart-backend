@@ -64,6 +64,7 @@ class MenuItem(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
+    image_url = db.Column(db.String(255))
     price = db.Column(db.Float, nullable=False)
     tax_amount = db.Column(db.Float, nullable=True)
     category = db.Column(db.String(20), nullable=False)
