@@ -98,10 +98,12 @@ def create_app(config_name='default'):
     from routes.auth_routes import auth_bp
     from routes.menu_routes import menu_bp
     from routes.order_routes import order_bp
+    from routes.user_routes import user_bp
     
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(menu_bp, url_prefix='/api/menu')
     app.register_blueprint(order_bp, url_prefix='/api/orders')
+    app.register_blueprint(user_bp, url_prefix='/api/users')
     
     # Root endpoint
     @app.route('/')
@@ -120,6 +122,22 @@ def create_app(config_name='default'):
                     'GET /api/auth/roles': 'Get available roles',
                     'POST /api/auth/refresh': 'Refresh access token',
                     'POST /api/auth/logout': 'Logout'
+                },
+                'users': {
+                    'GET /api/users': 'Get all users (manager only)',
+                    'GET /api/users/me': 'Get current user info',
+                    'GET /api/users/{id}': 'Get user by ID (manager only)',
+                    'PUT /api/users/{id}': 'Update user (manager only)',
+                    'PATCH /api/users/{id}': 'Partially update user (manager only)',
+                    'DELETE /api/users/{id}': 'Delete user (manager only)'
+                },
+                'checkins': {
+                    'GET /api/users/{id}/checkins': 'Get all check-ins for user',
+                    'POST /api/users/{id}/checkins': 'Create new check-in',
+                    'GET /api/users/{id}/checkins/current': 'Get active check-in',
+                    'GET /api/users/{id}/checkins/{checkin_id}': 'Get specific check-in',
+                    'PUT /api/users/{id}/checkins/{checkin_id}': 'Update check-in (checkout)',
+                    'DELETE /api/users/{id}/checkins/{checkin_id}': 'Delete check-in (manager only)'
                 },
                 'menu': {
                     'GET /api/menu/': 'Get all menu items (public)',

@@ -101,26 +101,26 @@ def test_authentication():
         return None
     
     # Test getting current user info
-    log_info("Testing GET /api/auth/me...")
+    log_info("Testing GET /api/users/me...")
     try:
         response = requests.get(
-            f"{BASE_URL}/api/auth/me",
+            f"{BASE_URL}/api/users/me",
             headers={**HEADERS, "Authorization": f"Bearer {token}"}
         )
         
         if response.status_code == 200:
             user_data = response.json()
-            log_success(f"GET /api/auth/me - User: {user_data.get('user', {}).get('username')}")
+            log_success(f"GET /api/users/me - User: {user_data.get('user', {}).get('username')}")
         else:
-            log_error(f"GET /api/auth/me failed - Status: {response.status_code}")
+            log_error(f"GET /api/users/me failed - Status: {response.status_code}")
     except Exception as e:
-        log_error(f"GET /api/auth/me exception - Error: {str(e)}")
-    
+        log_error(f"GET /api/users/me exception - Error: {str(e)}")
+
     # Test accessing protected endpoint without token
     log_info("Testing unauthorized access (no token)...")
     try:
-        response = requests.get(f"{BASE_URL}/api/auth/me", headers=HEADERS)
-        
+        response = requests.get(f"{BASE_URL}/api/users/me", headers=HEADERS)
+
         if response.status_code == 401:
             log_success("Unauthorized access correctly blocked - Status: 401")
         else:
@@ -132,7 +132,7 @@ def test_authentication():
     log_info("Testing invalid token...")
     try:
         response = requests.get(
-            f"{BASE_URL}/api/auth/me",
+            f"{BASE_URL}/api/users/me",
             headers={**HEADERS, "Authorization": "Bearer invalid_token_here"}
         )
         
@@ -204,7 +204,7 @@ def test_menu_items(token):
             created_item_id = data.get('data', {}).get('id')
             log_success(f"POST /api/menu/ - Created item ID: {created_item_id}")
         else:
-            log_error(f"POST /api/menu/ failed - Status: {response.status_code}, Response: {response.text}")
+            log_error(f"POST /api/menu/ failed - Status: {response.status_code}")
     except Exception as e:
         log_error(f"POST /api/menu/ exception - Error: {str(e)}")
     
@@ -384,7 +384,7 @@ def test_orders(token):
             order_number = data.get('data', {}).get('order_number')
             log_success(f"POST /api/orders/ - Created order {order_number}, ID: {created_order_id}")
         else:
-            log_error(f"POST /api/orders/ failed - Status: {response.status_code}, Response: {response.text}")
+            log_error(f"POST /api/orders/ failed - Status: {response.status_code}")
     except Exception as e:
         log_error(f"POST /api/orders/ exception - Error: {str(e)}")
     
@@ -501,7 +501,7 @@ def test_orders(token):
             if response.status_code == 200:
                 log_success(f"DELETE /api/menu/{menu_item_id} - Deleted successfully")
             else:
-                log_error(f"DELETE /api/menu/{menu_item_id} failed - Status: {response.status_code} - Response: {response.text}")
+                log_error(f"DELETE /api/menu/{menu_item_id} failed - Status: {response.status_code}")
         except Exception as e:
             log_error(f"DELETE /api/menu/{menu_item_id} exception - Error: {str(e)}")
 
@@ -515,6 +515,35 @@ def test_user_management(token):
     log_section("TEST: User Management")
     
     created_user_id = None
+    new_user_token = None
+    
+    # Test GET all users (manager only)
+    log_info("Testing GET /api/users (manager only)...")
+    try:
+        response = requests.get(
+            f"{BASE_URL}/api/users",
+            headers={**HEADERS, "Authorization": f"Bearer {token}"}
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            log_success(f"GET /api/users - Retrieved {len(data.get('data', []))} users")
+        else:
+            log_error(f"GET /api/users failed - Status: {response.status_code}")
+    except Exception as e:
+        log_error(f"GET /api/users exception - Error: {str(e)}")
+    
+    # Test GET all users without authentication
+    log_info("Testing GET /api/users without authentication...")
+    try:
+        response = requests.get(f"{BASE_URL}/api/users", headers=HEADERS)
+        
+        if response.status_code == 401:
+            log_success("GET /api/users correctly blocked without auth")
+        else:
+            log_error(f"GET /api/users not blocked without auth - Status: {response.status_code}")
+    except Exception as e:
+        log_error(f"GET /api/users no-auth test exception - Error: {str(e)}")
     
     # Test POST register new user (manager only)
     log_info("Testing POST /api/auth/register (create user)...")
@@ -538,7 +567,7 @@ def test_user_management(token):
             created_user_id = data.get('user', {}).get('id')
             log_success(f"POST /api/auth/register - Created user: {user_data['username']}")
         else:
-            log_error(f"POST /api/auth/register failed - Status: {response.status_code}, Response: {response.text}")
+            log_error(f"POST /api/auth/register failed - Status: {response.status_code}")
     except Exception as e:
         log_error(f"POST /api/auth/register exception - Error: {str(e)}")
     
@@ -568,7 +597,212 @@ def test_user_management(token):
         else:
             log_error(f"New user login failed: {user_data['username']}")
     
-    return created_user_id
+    # Test GET current user
+    if new_user_token:
+        log_info("Testing GET /api/users/me...")
+        try:
+            response = requests.get(
+                f"{BASE_URL}/api/users/me",
+                headers={**HEADERS, "Authorization": f"Bearer {new_user_token}"}
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                log_success(f"GET /api/users/me - Retrieved user: {data.get('data', {}).get('username')}")
+            else:
+                log_error(f"GET /api/users/me failed - Status: {response.status_code}")
+        except Exception as e:
+            log_error(f"GET /api/users/me exception - Error: {str(e)}")
+    
+    # Test GET specific user (manager only)
+    if created_user_id:
+        log_info(f"Testing GET /api/users/{created_user_id} (manager only)...")
+        try:
+            response = requests.get(
+                f"{BASE_URL}/api/users/{created_user_id}",
+                headers={**HEADERS, "Authorization": f"Bearer {token}"}
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                log_success(f"GET /api/users/{created_user_id} - User: {data.get('data', {}).get('username')}")
+            else:
+                log_error(f"GET /api/users/{created_user_id} failed - Status: {response.status_code}")
+        except Exception as e:
+            log_error(f"GET /api/users/{created_user_id} exception - Error: {str(e)}")
+    
+    # Test PATCH update user (manager only)
+    if created_user_id:
+        log_info(f"Testing PATCH /api/users/{created_user_id} (manager only)...")
+        try:
+            response = requests.patch(
+                f"{BASE_URL}/api/users/{created_user_id}",
+                headers={**HEADERS, "Authorization": f"Bearer {token}"},
+                json={"full_name": "Updated Test User"}
+            )
+            
+            if response.status_code == 200:
+                log_success(f"PATCH /api/users/{created_user_id} - Updated successfully")
+            else:
+                log_error(f"PATCH /api/users/{created_user_id} failed - Status: {response.status_code}")
+        except Exception as e:
+            log_error(f"PATCH /api/users/{created_user_id} exception - Error: {str(e)}")
+    
+    return created_user_id, new_user_token
+
+
+def test_checkins(user_id, user_token):
+    """Test check-in/check-out endpoints"""
+    log_section("TEST: Check-ins")
+    
+    if not user_id or not user_token:
+        log_error("Cannot test check-ins without valid user_id and token")
+        return
+    
+    checkin_id = None
+    
+    # Test GET all check-ins for user
+    log_info(f"Testing GET /api/users/{user_id}/checkins...")
+    try:
+        response = requests.get(
+            f"{BASE_URL}/api/users/{user_id}/checkins",
+            headers={**HEADERS, "Authorization": f"Bearer {user_token}"}
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            log_success(f"GET /api/users/{user_id}/checkins - Retrieved {len(data.get('data', []))} check-ins")
+        else:
+            log_error(f"GET /api/users/{user_id}/checkins failed - Status: {response.status_code}")
+    except Exception as e:
+        log_error(f"GET /api/users/{user_id}/checkins exception - Error: {str(e)}")
+    
+    # Test GET check-ins without authentication
+    log_info(f"Testing GET /api/users/{user_id}/checkins without authentication...")
+    try:
+        response = requests.get(f"{BASE_URL}/api/users/{user_id}/checkins", headers=HEADERS)
+        
+        if response.status_code == 401:
+            log_success("GET /api/users/{user_id}/checkins correctly blocked without auth")
+        else:
+            log_error(f"GET /api/users/{user_id}/checkins not blocked - Status: {response.status_code}")
+    except Exception as e:
+        log_error(f"GET /api/users/{user_id}/checkins no-auth test exception - Error: {str(e)}")
+    
+    # Test POST create check-in
+    log_info(f"Testing POST /api/users/{user_id}/checkins (check-in)...")
+    try:
+        response = requests.post(
+            f"{BASE_URL}/api/users/{user_id}/checkins",
+            headers={**HEADERS, "Authorization": f"Bearer {user_token}"}
+        )
+        
+        if response.status_code == 201:
+            data = response.json()
+            checkin_id = data.get('data', {}).get('id')
+            log_success(f"POST /api/users/{user_id}/checkins - Check-in created: {checkin_id}")
+        else:
+            log_error(f"POST /api/users/{user_id}/checkins failed - Status: {response.status_code}")
+    except Exception as e:
+        log_error(f"POST /api/users/{user_id}/checkins exception - Error: {str(e)}")
+    
+    # Test POST check-in again (should fail - already checked in)
+    log_info(f"Testing POST /api/users/{user_id}/checkins again (should fail)...")
+    try:
+        response = requests.post(
+            f"{BASE_URL}/api/users/{user_id}/checkins",
+            headers={**HEADERS, "Authorization": f"Bearer {user_token}"}
+        )
+        
+        if response.status_code == 400:
+            log_success("POST /api/users/{user_id}/checkins correctly blocked - already checked in")
+        else:
+            log_error(f"POST /api/users/{user_id}/checkins not blocked - Status: {response.status_code}")
+    except Exception as e:
+        log_error(f"POST /api/users/{user_id}/checkins second attempt exception - Error: {str(e)}")
+    
+    # Test GET current check-in
+    log_info(f"Testing GET /api/users/{user_id}/checkins/current...")
+    try:
+        response = requests.get(
+            f"{BASE_URL}/api/users/{user_id}/checkins/current",
+            headers={**HEADERS, "Authorization": f"Bearer {user_token}"}
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            log_success(f"GET /api/users/{user_id}/checkins/current - Active check-in found")
+        else:
+            log_error(f"GET /api/users/{user_id}/checkins/current failed - Status: {response.status_code}")
+    except Exception as e:
+        log_error(f"GET /api/users/{user_id}/checkins/current exception - Error: {str(e)}")
+    
+    # Test GET specific check-in
+    if checkin_id:
+        log_info(f"Testing GET /api/users/{user_id}/checkins/{checkin_id}...")
+        try:
+            response = requests.get(
+                f"{BASE_URL}/api/users/{user_id}/checkins/{checkin_id}",
+                headers={**HEADERS, "Authorization": f"Bearer {user_token}"}
+            )
+            
+            if response.status_code == 200:
+                log_success(f"GET /api/users/{user_id}/checkins/{checkin_id} - Retrieved check-in")
+            else:
+                log_error(f"GET /api/users/{user_id}/checkins/{checkin_id} failed - Status: {response.status_code}")
+        except Exception as e:
+            log_error(f"GET /api/users/{user_id}/checkins/{checkin_id} exception - Error: {str(e)}")
+    
+    # Test PUT update check-in (check-out)
+    if checkin_id:
+        log_info(f"Testing PUT /api/users/{user_id}/checkins/{checkin_id} (check-out)...")
+        try:
+            response = requests.put(
+                f"{BASE_URL}/api/users/{user_id}/checkins/{checkin_id}",
+                headers={**HEADERS, "Authorization": f"Bearer {user_token}"},
+                json={}
+            )
+            
+            if response.status_code == 200:
+                log_success(f"PUT /api/users/{user_id}/checkins/{checkin_id} - Check-out successful")
+            else:
+                log_error(f"PUT /api/users/{user_id}/checkins/{checkin_id} failed - Status: {response.status_code}")
+        except Exception as e:
+            log_error(f"PUT /api/users/{user_id}/checkins/{checkin_id} exception - Error: {str(e)}")
+    
+    # Test PUT check-out again (should fail - already checked out)
+    if checkin_id:
+        log_info(f"Testing PUT /api/users/{user_id}/checkins/{checkin_id} again (should fail)...")
+        try:
+            response = requests.put(
+                f"{BASE_URL}/api/users/{user_id}/checkins/{checkin_id}",
+                headers={**HEADERS, "Authorization": f"Bearer {user_token}"},
+                json={}
+            )
+            
+            if response.status_code == 400:
+                log_success(f"PUT /api/users/{user_id}/checkins/{checkin_id} correctly blocked - already checked out")
+            else:
+                log_error(f"PUT /api/users/{user_id}/checkins/{checkin_id} not blocked - Status: {response.status_code}")
+        except Exception as e:
+            log_error(f"PUT /api/users/{user_id}/checkins/{checkin_id} second attempt exception - Error: {str(e)}")
+    
+    # Test GET current check-in (should fail - no active check-in)
+    log_info(f"Testing GET /api/users/{user_id}/checkins/current (should fail - no active)...")
+    try:
+        response = requests.get(
+            f"{BASE_URL}/api/users/{user_id}/checkins/current",
+            headers={**HEADERS, "Authorization": f"Bearer {user_token}"}
+        )
+        
+        if response.status_code == 404:
+            log_success(f"GET /api/users/{user_id}/checkins/current correctly returns 404")
+        else:
+            log_error(f"GET /api/users/{user_id}/checkins/current should return 404 - Status: {response.status_code}")
+    except Exception as e:
+        log_error(f"GET /api/users/{user_id}/checkins/current no-active test exception - Error: {str(e)}")
+    
+    return checkin_id
 
 def print_summary():
     """Print test summary"""
@@ -616,7 +850,13 @@ def main():
     test_orders(token)
         
     # Test user management
-    test_user_management(token)
+    created_user_id, new_user_token = test_user_management(token)
+    
+    # Test check-ins with the newly created user
+    if created_user_id and new_user_token:
+        test_checkins(created_user_id, new_user_token)
+    else:
+        log_error("Skipping check-in tests - no valid user created")
     
     # Print summary
     exit_code = print_summary()

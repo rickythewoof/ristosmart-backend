@@ -55,6 +55,24 @@ class User(db.Model):
     def __repr__(self):
         return f'<User {self.username} ({self.role})>'
 
+# ============ CHECK-IN MODEL ============
+class CheckIn(db.Model):
+    __tablename__ = 'check_ins'
+    
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    user_id = db.Column(db.String(36), db.ForeignKey('users.id'), nullable=False)
+    check_in_time = db.Column(db.DateTime, default=datetime.now(timezone.utc))
+    check_out_time = db.Column(db.DateTime, nullable=True)
+    
+    user = db.relationship('User', backref=db.backref('check_ins', lazy=True))
+    
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'user_id': self.user_id,
+            'check_in_time': self.check_in_time.isoformat() if self.check_in_time else None,
+            'check_out_time': self.check_out_time.isoformat() if self.check_out_time else None
+        }
 
 # ============ MENU MODEL ============
 
