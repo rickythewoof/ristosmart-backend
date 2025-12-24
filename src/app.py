@@ -1,7 +1,7 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
-from datetime import datetime
+from datetime import datetime, timezone
 import time
 import uuid
 
@@ -95,10 +95,10 @@ def create_app(config_name='default'):
         }), 401
     
     # Register blueprints
-    from routes.auth_routes import auth_bp
-    from routes.menu_routes import menu_bp
-    from routes.order_routes import order_bp
-    from routes.user_routes import user_bp
+    from routes.auth import auth_bp
+    from routes.menu import menu_bp
+    from routes.orders import order_bp
+    from routes.users import user_bp
     
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(menu_bp, url_prefix='/api/menu')
@@ -112,13 +112,11 @@ def create_app(config_name='default'):
             'service': 'ByteRisto API',
             'version': '2.0.0',
             'status': 'healthy',
-            'timestamp': datetime.utcnow().isoformat(),
-            'features': ['unified-backend', 'jwt-authentication', 'role-based-access'],
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'endpoints': {
                 'auth': {
                     'POST /api/auth/login': 'User login',
                     'POST /api/auth/register': 'Register new user (manager only)',
-                    'GET /api/auth/me': 'Get current user info',
                     'GET /api/auth/roles': 'Get available roles',
                     'POST /api/auth/refresh': 'Refresh access token',
                     'POST /api/auth/logout': 'Logout'
@@ -165,7 +163,7 @@ def create_app(config_name='default'):
         return jsonify({
             'status': 'healthy',
             'service': 'byteristo-unified-backend',
-            'timestamp': datetime.utcnow().isoformat(),
+            'timestamp': datetime.now(timezone.utc).isoformat(),
             'uptime': time.process_time()
         })
     

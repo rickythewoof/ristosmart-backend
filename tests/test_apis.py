@@ -94,7 +94,7 @@ def test_authentication():
     
     # Test login with manager credentials
     log_info("Testing manager login...")
-    token = login_user("manager", "changeme123")
+    token = login_user("manager", "changeme")
     
     if not token:
         log_error("Manager login failed - Cannot proceed with authenticated tests")
