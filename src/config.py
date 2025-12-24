@@ -40,18 +40,6 @@ class DevelopmentConfig(Config):
 class ProductionConfig(Config):
     DEBUG = False
 
-    if not os.getenv('JWT_SECRET_KEY') or Config.JWT_SECRET_KEY == 'super-secret-jwt-key-change-in-production':   # type: ignore
-        raise ValueError("Please set a strong JWT_SECRET_KEY environment variable for production")
-    
-    if not os.getenv('SECRET_KEY') or Config.SECRET_KEY == 'default_secret_key':   # type: ignore
-        raise ValueError("Please set a strong SECRET_KEY environment variable for production")
-
-    if not os.getenv('MANAGER_PASSWORD') or Config.MANAGER_PASSWORD == 'changemeplease!':   # type: ignore
-        raise ValueError("Please set a strong MANAGER_PASSWORD environment variable for production")
-
-    if not os.getenv('DB_PASSWORD') or Config.DB_PASSWORD == 'password':   # type: ignore
-        raise ValueError("Please set a strong DB_PASSWORD environment variable for production")
-
 
 config = {
     'development': DevelopmentConfig,
