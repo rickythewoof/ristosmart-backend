@@ -109,7 +109,7 @@ def create_app(config_name='default'):
     @app.route('/')
     def root():
         return jsonify({
-            'service': 'ByteRisto API',
+            'service': 'RistoSmart API',
             'version': '2.0.0',
             'status': 'healthy',
             'timestamp': datetime.now(timezone.utc).isoformat(),
@@ -162,7 +162,7 @@ def create_app(config_name='default'):
     def health_check():
         return jsonify({
             'status': 'healthy',
-            'service': 'byteristo-unified-backend',
+            'service': 'ristosmart-unified-backend',
             'timestamp': datetime.now(timezone.utc).isoformat(),
             'uptime': time.process_time()
         })

@@ -38,18 +38,18 @@ def get_db_connection():
         return psycopg2.connect(
             host=config.get('DB_HOST', 'localhost'),
             port=int(config.get('DB_PORT', '5432')),
-            database=config.get('DB_NAME', 'byteristo_db'),
-            user=config.get('DB_USER', 'byteristo_user'),
-            password=config.get('DB_PASSWORD', 'byteristo_password')
+            database=config.get('DB_NAME', 'ristosmart'),
+            user=config.get('DB_USER', 'ristosmart'),
+            password=config.get('DB_PASSWORD', 'mysecretpassword')
         )
     except Exception as e:
         print(f"Failed to connect using config, trying env vars: {e}")
         return psycopg2.connect(
             host=os.getenv('DB_HOST', 'localhost'),
             port=int(os.getenv('DB_PORT', '5432')),
-            database=os.getenv('DB_NAME', 'byteristo_db'),
-            user=os.getenv('DB_USER', 'byteristo_user'),
-            password=os.getenv('DB_PASSWORD', 'byteristo_password')
+            database=os.getenv('DB_NAME', 'ristosmart'),
+            user=os.getenv('DB_USER', 'ristosmart'),
+            password=os.getenv('DB_PASSWORD', 'mysecretpassword')
         )
 
 
