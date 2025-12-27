@@ -4,11 +4,35 @@ from flask_jwt_extended import JWTManager
 from datetime import datetime, timezone
 import time
 import uuid
+import sys
+import os
 
 from config import config
 from models import db
 
 from models import User
+
+def wait_for_db(app, max_retries=30, delay=2):
+    """Wait for database to be ready before proceeding"""
+    print("Waiting for database to be ready...")
+    
+    for attempt in range(max_retries):
+        try:
+            with app.app_context():
+                # Try to connect to the database
+                db.engine.connect()
+                print(f"Database connection successful!")
+                return True
+        except Exception as e:
+            if attempt < max_retries - 1:
+                print(f"Database not ready yet (attempt {attempt + 1}/{max_retries}). Retrying in {delay}s...")
+                time.sleep(delay)
+            else:
+                print(f"Failed to connect to database after {max_retries} attempts")
+                print(f"Error: {e}")
+                return False
+    
+    return False
 
 def create_default_manager(app):
     """Create default manager user if it doesn't exist"""
@@ -43,9 +67,6 @@ def create_default_manager(app):
             db.session.commit()
             
             print(f"Default manager created successfully!")
-            print(f"   Email: {manager.email}")
-            print(f"   Username: {manager.username}")
-            print(f"   Role: {manager.role}")
             
         except Exception as e:
             db.session.rollback()
@@ -186,19 +207,23 @@ def create_app(config_name='default'):
     
     # Create tables
     with app.app_context():
+        if not wait_for_db(app):
+            print("ERROR: Could not establish database connection. Exiting...")
+            sys.exit(1)
+        
         db.create_all()
         print("Database tables created successfully")
         
-        # Check if default manager exists, if not create one
         create_default_manager(app)
+        
     
     return app
 
 
+app = create_app(os.getenv('FLASK_ENV', 'development'))
+
 if __name__ == '__main__':
-    import os
-    app = create_app(os.getenv('FLASK_ENV', 'development'))
     port = app.config.get('PORT', 3000)
     print(f"Ristosmart Unified Backend starting on port {port}")
-    print(f"📚 API Documentation available at http://localhost:{port}/")
+    print(f"API Documentation available at http://localhost:{port}/")
     app.run(host='0.0.0.0', port=port, debug=True)

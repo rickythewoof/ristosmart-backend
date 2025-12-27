@@ -8,9 +8,17 @@ import requests
 import json
 import sys
 from datetime import datetime
+import os
+from dotenv import load_dotenv
+from pathlib import Path
+project_root = Path(__file__).parent.parent.parent
+env_path = project_root / '.env'
+
+load_dotenv(dotenv_path=env_path)
+
 
 # Configuration
-BASE_URL = "http://localhost:3000"
+BASE_URL = os.getenv("BASE_URL", "http://localhost:3000")
 HEADERS = {"Content-Type": "application/json"}
 
 # ANSI color codes for terminal output
@@ -94,7 +102,7 @@ def test_authentication():
     
     # Test login with manager credentials
     log_info("Testing manager login...")
-    token = login_user("manager", "changeme")
+    token = login_user("manager", f"{os.getenv('MANAGER_PASSWORD', 'changemeplease!')}")
     
     if not token:
         log_error("Manager login failed - Cannot proceed with authenticated tests")
