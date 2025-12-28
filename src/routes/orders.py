@@ -1,38 +1,74 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import jwt_required, get_jwt
+from flasgger import swag_from
+from docs.order_docs import (
+    get_all_orders_spec,
+    get_order_spec,
+    create_order_spec,
+    update_order_status_spec,
+    update_order_item_status_spec,
+    process_payment_spec,
+    delete_order_spec
+)
 from models import db, Order, OrderItem, MenuItem
 from auth import permission_required, role_required, authentication_required
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import text
 from marshmallow import Schema, fields, ValidationError
 from datetime import datetime, timedelta
 import uuid
 
-from models import Order, OrderItem, MenuItem
-
-
 order_bp = Blueprint('orders', __name__)
 
 class OrderItemSchema(Schema):
+    id = fields.Str(dump_only=True)
     menu_item_id = fields.Str(required=True)
+    menu_item_name = fields.Str(dump_only=True)
     quantity = fields.Int(required=True, validate=lambda x: x > 0)
+    unit_price = fields.Float(dump_only=True)
+    total_price = fields.Float(dump_only=True)
     special_instructions = fields.Str(allow_none=True)
+    status = fields.Str(dump_only=True)
+    created_at = fields.DateTime(dump_only=True)
+    updated_at = fields.DateTime(dump_only=True)
 
-    class Meta(Schema.Meta):
+    class Meta:
         unknown = 'exclude'
 
 class OrderSchema(Schema):
+    id = fields.Str(dump_only=True)
+    order_number = fields.Str(dump_only=True)
     table_number = fields.Int(required=True, validate=lambda x: x > 0)
     customer_name = fields.Str(allow_none=True)
     order_type = fields.Str(required=True, validate=lambda x: x in ['dine_in', 'takeout', 'delivery'])
+    status = fields.Str(dump_only=True)
+    total_amount = fields.Float(dump_only=True)
+    tax_amount = fields.Float(dump_only=True)
+    discount_amount = fields.Float(dump_only=True)
+    final_amount = fields.Float(dump_only=True)
     special_instructions = fields.Str(allow_none=True)
-    total_amount = fields.Float(allow_none=True)
+    estimated_completion_time = fields.DateTime(dump_only=True)
     items = fields.List(fields.Nested(OrderItemSchema), required=True, validate=lambda x: len(x) > 0)
+    created_at = fields.DateTime(dump_only=True)
+    updated_at = fields.DateTime(dump_only=True)
 
-    class Meta(Schema.Meta):
+    class Meta:
         unknown = 'exclude'
 
+class OrderStatusUpdateSchema(Schema):
+    status = fields.Str(required=True, validate=lambda x: x in ['pending', 'confirmed', 'preparing', 'ready', 'delivered', 'payed', 'cancelled'])
+
+class OrderItemStatusUpdateSchema(Schema):
+    status = fields.Str(required=True, validate=lambda x: x in ['pending', 'preparing', 'ready', 'served', 'cancelled'])
+
+class PaymentSchema(Schema):
+    payment_method = fields.Str(missing='cash')
+    payment_amount = fields.Float(allow_none=True)
+
 order_schema = OrderSchema()
+orders_schema = OrderSchema(many=True)
+order_status_update_schema = OrderStatusUpdateSchema()
+order_item_status_update_schema = OrderItemStatusUpdateSchema()
+payment_schema = PaymentSchema()
 
 
 def generate_order_number():
@@ -55,6 +91,7 @@ def calculate_estimated_completion_time(items):
 
 @order_bp.route('/', methods=['GET'])
 @authentication_required()
+@swag_from(get_all_orders_spec)
 def get_all_orders():
     """Get all orders with optional filtering - PROTECTED"""
     try:
@@ -83,10 +120,9 @@ def get_all_orders():
         
         return jsonify({
             'success': True,
-            'data': [order.to_dict() for order in orders],
-            'count': len(orders),
-            'fetched_by_role': user_role
-        })
+            'data': orders_schema.dump(orders),
+            'count': len(orders)
+        }), 200
         
     except Exception as e:
         print(f"Error in get_all_orders: {str(e)}")
@@ -99,9 +135,19 @@ def get_all_orders():
 
 @order_bp.route('/<string:order_id>', methods=['GET'])
 @jwt_required()
+@swag_from(get_order_spec)
 def get_order_by_id(order_id):
     """Get order by ID - PROTECTED"""
     try:
+        # Validate UUID
+        try:
+            uuid.UUID(order_id)
+        except ValueError:
+            return jsonify({
+                'success': False,
+                'message': 'Invalid order ID format'
+            }), 400
+        
         order = Order.query.get(order_id)
         
         if not order:
@@ -112,8 +158,8 @@ def get_order_by_id(order_id):
         
         return jsonify({
             'success': True,
-            'data': order.to_dict()
-        })
+            'data': order_schema.dump(order)
+        }), 200
         
     except Exception as e:
         print(f"Error in get_order_by_id: {str(e)}")
@@ -126,6 +172,7 @@ def get_order_by_id(order_id):
 
 @order_bp.route('/', methods=['POST'])
 @permission_required('order.create')
+@swag_from(create_order_spec)
 def create_order():
     """Create a new order - PROTECTED: Waiter, Manager"""
     try:
@@ -215,8 +262,7 @@ def create_order():
         return jsonify({
             'success': True,
             'message': 'Order created successfully',
-            'data': order.to_dict(),
-            'created_by': {'role': user_role}
+            'data': order_schema.dump(order)
         }), 201
         
     except IntegrityError as e:
@@ -241,10 +287,12 @@ def create_order():
 
 @order_bp.route('/<string:order_id>/status', methods=['PUT'])
 @permission_required('order.update_status')
+@swag_from(update_order_status_spec)
 def update_order_status(order_id):
     """Update order status - PROTECTED: Chef, Manager"""
     try:
         claims = get_jwt()
+        user_id = claims.get('sub')
         user_role = claims.get('role')
         
         try:
@@ -255,60 +303,42 @@ def update_order_status(order_id):
                 'message': 'Invalid order ID format'
             }), 400
         
-        result = db.session.execute(
-            text("SELECT * FROM orders WHERE id = :order_id"),
-            {'order_id': order_id}
-        ).fetchone()
+        order = Order.query.get(order_id)
         
-        if not result:
+        if not order:
             return jsonify({
                 'success': False,
                 'message': 'Order not found'
             }), 404
         
-        data = request.json
-        new_status = data.get('status')
-        
-        if not new_status:
+        try:
+            data = order_status_update_schema.load(request.json)
+        except ValidationError as err:
             return jsonify({
                 'success': False,
-                'message': 'Status is required'
+                'message': 'Validation error',
+                'errors': err.messages
             }), 400
         
-        valid_statuses = ['pending', 'confirmed', 'preparing', 'ready', 'delivered', 'payed', 'cancelled']
-        if new_status not in valid_statuses:
-            return jsonify({
-                'success': False,
-                'message': f'Invalid status. Must be one of: {", ".join(valid_statuses)}'
-            }), 400
+        new_status = data['status']
         
-        print(f"[AUDIT] Order {order_id} status changed to {new_status} by {user_role}")
+        print(f"[AUDIT] Order {order_id} status changed to {new_status} by {user_role} {user_id}")
         
-        db.session.execute(
-            text("UPDATE orders SET status = :status, updated_at = CURRENT_TIMESTAMP WHERE id = :order_id"),
-            {'status': new_status, 'order_id': order_id}
-        )
+        order.status = new_status
         
         if new_status in ['preparing', 'ready', 'delivered']:
-            db.session.execute(
-                text("""
-                    UPDATE order_items 
-                    SET status = :item_status, updated_at = CURRENT_TIMESTAMP 
-                    WHERE order_id = :order_id AND status = 'pending'
-                """),
-                {'item_status': new_status if new_status != 'confirmed' else 'pending', 'order_id': order_id}
-            )
+            item_status = new_status if new_status != 'confirmed' else 'pending'
+            for item in order.items:
+                if item.status == 'pending':
+                    item.status = item_status
         
         db.session.commit()
-        
-        updated_order = Order.query.get(order_id)
         
         return jsonify({
             'success': True,
             'message': 'Order status updated successfully',
-            'data': updated_order.to_dict(),
-            'updated_by_role': user_role
-        })
+            'data': order_schema.dump(order)
+        }), 200
         
     except Exception as e:
         db.session.rollback()
@@ -324,10 +354,12 @@ def update_order_status(order_id):
 
 @order_bp.route('/<string:order_id>/items/<string:item_id>/status', methods=['PUT'])
 @permission_required('order.update_status')
+@swag_from(update_order_item_status_spec)
 def update_order_item_status(order_id, item_id):
     """Update order item status - PROTECTED: Chef, Manager"""
     try:
         claims = get_jwt()
+        user_id = claims.get('sub')
         user_role = claims.get('role')
         
         try:
@@ -339,81 +371,49 @@ def update_order_item_status(order_id, item_id):
                 'message': 'Invalid ID format'
             }), 400
         
-        order_result = db.session.execute(
-            text("SELECT * FROM orders WHERE id = :order_id"),
-            {'order_id': order_id}
-        ).fetchone()
+        order = Order.query.get(order_id)
         
-        if not order_result:
+        if not order:
             return jsonify({
                 'success': False,
                 'message': 'Order not found'
             }), 404
         
-        item_result = db.session.execute(
-            text("SELECT * FROM order_items WHERE id = :item_id AND order_id = :order_id"),
-            {'item_id': item_id, 'order_id': order_id}
-        ).fetchone()
+        order_item = OrderItem.query.filter_by(id=item_id, order_id=order_id).first()
         
-        if not item_result:
+        if not order_item:
             return jsonify({
                 'success': False,
                 'message': 'Order item not found'
             }), 404
         
-        data = request.json
-        new_status = data.get('status')
-        
-        if not new_status:
+        try:
+            data = order_item_status_update_schema.load(request.json)
+        except ValidationError as err:
             return jsonify({
                 'success': False,
-                'message': 'Status is required'
+                'message': 'Validation error',
+                'errors': err.messages
             }), 400
         
-        valid_statuses = ['pending', 'preparing', 'ready', 'served', 'cancelled']
-        if new_status not in valid_statuses:
-            return jsonify({
-                'success': False,
-                'message': f'Invalid status. Must be one of: {", ".join(valid_statuses)}'
-            }), 400
+        new_status = data['status']
         
-        print(f"[AUDIT] Order item {item_id} status changed to {new_status} by {user_role}")
+        print(f"[AUDIT] Order item {item_id} status changed to {new_status} by {user_role} {user_id}")
         
-        db.session.execute(
-            text("""
-                UPDATE order_items 
-                SET status = :status, updated_at = CURRENT_TIMESTAMP 
-                WHERE id = :item_id AND order_id = :order_id
-            """),
-            {'status': new_status, 'item_id': item_id, 'order_id': order_id}
-        )
+        order_item.status = new_status
         
-        # Check if all items are ready
-        all_items_result = db.session.execute(
-            text("""
-                SELECT COUNT(*) as total_count,
-                       COUNT(CASE WHEN status IN ('ready', 'served') THEN 1 END) as ready_count
-                FROM order_items 
-                WHERE order_id = :order_id
-            """),
-            {'order_id': order_id}
-        ).fetchone()
+        all_items_ready = all(item.status in ['ready', 'served'] for item in order.items)
         
-        if all_items_result.total_count == all_items_result.ready_count and order_result.status != 'ready':
-            db.session.execute(
-                text("UPDATE orders SET status = 'ready', updated_at = CURRENT_TIMESTAMP WHERE id = :order_id"),
-                {'order_id': order_id}
-            )
+        if all_items_ready and order.status != 'ready':
+            order.status = 'ready'
         
         db.session.commit()
-        
-        updated_order = Order.query.get(order_id)
         
         return jsonify({
             'success': True,
             'message': 'Order item status updated successfully',
-            'data': updated_order.to_dict()
-        })
+            'data': order_schema.dump(order)
+        }), 200
         
     except Exception as e:
         db.session.rollback()
@@ -429,6 +429,7 @@ def update_order_item_status(order_id, item_id):
 
 @order_bp.route('/<string:order_id>/pay', methods=['POST'])
 @permission_required('order.update_payment')
+@swag_from(process_payment_spec)
 def pay_order(order_id):
     """Process payment for order - PROTECTED: Cashier, Manager"""
     try:
@@ -444,63 +445,54 @@ def pay_order(order_id):
                 'message': 'Invalid order ID format'
             }), 400
         
-        result = db.session.execute(
-            text("SELECT * FROM orders WHERE id = :order_id"),
-            {'order_id': order_id}
-        ).fetchone()
+        order = Order.query.get(order_id)
         
-        if not result:
+        if not order:
             return jsonify({
                 'success': False,
                 'message': 'Order not found'
             }), 404
         
-        if result.status not in ['ready', 'delivered']:
+        if order.status not in ['ready', 'delivered']:
             return jsonify({
                 'success': False,
-                'message': f'Order must be ready or delivered to be paid. Current status: {result.status}'
+                'message': f'Order must be ready or delivered to be paid. Current status: {order.status}'
             }), 400
         
-        data = request.json or {}
-        payment_method = data.get('payment_method', 'cash')
-        payment_amount = data.get('payment_amount')
+        try:
+            payment_data = payment_schema.load(request.json or {})
+        except ValidationError as err:
+            return jsonify({
+                'success': False,
+                'message': 'Validation error',
+                'errors': err.messages
+            }), 400
+        
+        payment_method = payment_data['payment_method']
+        payment_amount = payment_data.get('payment_amount')
         
         if payment_amount is not None:
-            try:
-                payment_amount = float(payment_amount)
-                if payment_amount < float(result.final_amount):
-                    return jsonify({
-                        'success': False,
-                        'message': f'Payment amount (€{payment_amount}) is less than order total (€{result.final_amount})'
-                    }), 400
-            except ValueError:
+            if payment_amount < float(order.final_amount):
                 return jsonify({
                     'success': False,
-                    'message': 'Invalid payment amount'
+                    'message': f'Payment amount (€{payment_amount}) is less than order total (€{order.final_amount})'
                 }), 400
         
         print(f"[AUDIT] Payment processed for order {order_id} by {user_role} {user_id} - Method: {payment_method}")
         
-        db.session.execute(
-            text("UPDATE orders SET status = 'payed', updated_at = CURRENT_TIMESTAMP WHERE id = :order_id"),
-            {'order_id': order_id}
-        )
-        
+        order.status = 'payed'
         db.session.commit()
-        
-        updated_order = Order.query.get(order_id)
         
         return jsonify({
             'success': True,
             'message': 'Payment processed successfully',
-            'data': updated_order.to_dict(),
+            'data': order_schema.dump(order),
             'payment_info': {
                 'method': payment_method,
-                'amount': float(result.final_amount),
-                'change': payment_amount - float(result.final_amount) if payment_amount else 0,
-                'processed_by_role': user_role
+                'amount': float(order.final_amount),
+                'change': payment_amount - float(order.final_amount) if payment_amount else 0
             }
-        })
+        }), 200
         
     except Exception as e:
         db.session.rollback()
@@ -516,12 +508,22 @@ def pay_order(order_id):
 
 @order_bp.route('/<string:order_id>', methods=['DELETE'])
 @role_required('manager')
+@swag_from(delete_order_spec)
 def delete_order(order_id):
     """Delete order - PROTECTED: Manager only"""
     try:
         claims = get_jwt()
         user_id = claims.get('sub')
         
+        try:
+            uuid.UUID(order_id)
+        except ValueError:
+            return jsonify({
+                'success': False,
+                'message': 'Invalid order ID format'
+            }), 400
+        
+        # Find order using ORM
         order = Order.query.get(order_id)
         
         if not order:
@@ -546,7 +548,7 @@ def delete_order(order_id):
         return jsonify({
             'success': True,
             'message': 'Order deleted successfully'
-        })
+        }), 200
         
     except Exception as e:
         db.session.rollback()

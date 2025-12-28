@@ -529,7 +529,7 @@ def test_user_management(token):
     log_info("Testing GET /api/users (manager only)...")
     try:
         response = requests.get(
-            f"{BASE_URL}/api/users",
+            f"{BASE_URL}/api/users/",
             headers={**HEADERS, "Authorization": f"Bearer {token}"}
         )
         
@@ -812,6 +812,278 @@ def test_checkins(user_id, user_token):
     
     return checkin_id
 
+def test_inventory(token):
+    """Test inventory/product endpoints"""
+    log_section("TEST: Inventory/Products")
+    
+    created_product_id = None
+    
+    # Test GET all products
+    log_info("Testing GET /api/inventory/...")
+    try:
+        response = requests.get(
+            f"{BASE_URL}/api/inventory/",
+            headers={**HEADERS, "Authorization": f"Bearer {token}"}
+        )
+        
+        if response.status_code == 200:
+            data = response.json()
+            log_success(f"GET /api/inventory/ - Retrieved {data.get('count', 0)} products")
+        else:
+            log_error(f"GET /api/inventory/ failed - Status: {response.status_code}")
+    except Exception as e:
+        log_error(f"GET /api/inventory/ exception - Error: {str(e)}")
+    
+    # Test GET all products without authentication
+    log_info("Testing GET /api/inventory/ without authentication...")
+    try:
+        response = requests.get(f"{BASE_URL}/api/inventory/", headers=HEADERS)
+        
+        if response.status_code == 401:
+            log_success("GET /api/inventory/ correctly blocked without auth")
+        else:
+            log_error(f"GET /api/inventory/ not blocked without auth - Status: {response.status_code}")
+    except Exception as e:
+        log_error(f"GET /api/inventory/ no-auth test exception - Error: {str(e)}")
+    
+    # Test POST create product
+    log_info("Testing POST /api/inventory/ (create product)...")
+    # Generate EAN-13 (13 digits) with timestamp to make it unique
+    timestamp = datetime.now().strftime('%S%f')[:5]  # Get 5 digits from seconds+microseconds
+    product_data = {
+        "ean": f"12345678{timestamp}",  # EAN-13: 8 fixed + 5 variable = 13 digits
+        "name": f"Test Product {datetime.now().strftime('%H%M%S')}",
+        "description": "Automated test product",
+        "price": 25.99,
+        "category": "beverages",
+        "image_url": "https://example.com/product.jpg"
+    }
+    
+    try:
+        response = requests.post(
+            f"{BASE_URL}/api/inventory/",
+            headers={**HEADERS, "Authorization": f"Bearer {token}"},
+            json=product_data
+        )
+        
+        if response.status_code == 201:
+            data = response.json()
+            created_product_id = data.get('data', {}).get('id')
+            log_success(f"POST /api/inventory/ - Created product ID: {created_product_id}")
+        else:
+            log_error(f"POST /api/inventory/ failed - Status: {response.status_code}, Response: {response.text}")
+    except Exception as e:
+        log_error(f"POST /api/inventory/ exception - Error: {str(e)}")
+    
+    # Test POST create product with invalid data (missing required fields)
+    log_info("Testing POST /api/inventory/ with invalid data (missing fields)...")
+    invalid_product_data = {
+        "name": "Invalid Product"
+        # Missing ean and price (required fields)
+    }
+    
+    try:
+        response = requests.post(
+            f"{BASE_URL}/api/inventory/",
+            headers={**HEADERS, "Authorization": f"Bearer {token}"},
+            json=invalid_product_data
+        )
+        
+        if response.status_code == 400:
+            log_success("POST /api/inventory/ correctly rejected invalid data - Status: 400")
+        else:
+            log_error(f"POST /api/inventory/ should reject invalid data - Status: {response.status_code}")
+    except Exception as e:
+        log_error(f"POST /api/inventory/ invalid data test exception - Error: {str(e)}")
+    
+    # Test POST create product with duplicate EAN
+    if created_product_id:
+        log_info("Testing POST /api/inventory/ with duplicate EAN...")
+        try:
+            response = requests.post(
+                f"{BASE_URL}/api/inventory/",
+                headers={**HEADERS, "Authorization": f"Bearer {token}"},
+                json=product_data  # Same EAN as before
+            )
+            
+            if response.status_code == 409:
+                log_success("POST /api/inventory/ correctly rejected duplicate EAN - Status: 409")
+            else:
+                log_error(f"POST /api/inventory/ should reject duplicate EAN - Status: {response.status_code}")
+        except Exception as e:
+            log_error(f"POST /api/inventory/ duplicate EAN test exception - Error: {str(e)}")
+    
+    # Test POST without authentication
+    log_info("Testing POST /api/inventory/ without authentication...")
+    try:
+        response = requests.post(
+            f"{BASE_URL}/api/inventory/",
+            headers=HEADERS,
+            json=product_data
+        )
+        
+        if response.status_code == 401:
+            log_success("POST /api/inventory/ correctly blocked without auth")
+        else:
+            log_error(f"POST /api/inventory/ not blocked without auth - Status: {response.status_code}")
+    except Exception as e:
+        log_error(f"POST /api/inventory/ no-auth test exception - Error: {str(e)}")
+    
+    if created_product_id:
+        # Test GET single product
+        log_info(f"Testing GET /api/inventory/{created_product_id}...")
+        try:
+            response = requests.get(
+                f"{BASE_URL}/api/inventory/{created_product_id}",
+                headers={**HEADERS, "Authorization": f"Bearer {token}"}
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                product_name = data.get('data', {}).get('name')
+                log_success(f"GET /api/inventory/{created_product_id} - Name: {product_name}")
+            else:
+                log_error(f"GET /api/inventory/{created_product_id} failed - Status: {response.status_code}")
+        except Exception as e:
+            log_error(f"GET /api/inventory/{created_product_id} exception - Error: {str(e)}")
+        
+        # Test GET single product with invalid UUID
+        log_info("Testing GET /api/inventory/invalid-uuid...")
+        try:
+            response = requests.get(
+                f"{BASE_URL}/api/inventory/invalid-uuid-123",
+                headers={**HEADERS, "Authorization": f"Bearer {token}"}
+            )
+            
+            if response.status_code == 400:
+                log_success("GET /api/inventory/invalid-uuid correctly rejected - Status: 400")
+            else:
+                log_error(f"GET /api/inventory/invalid-uuid should return 400 - Status: {response.status_code}")
+        except Exception as e:
+            log_error(f"GET /api/inventory/invalid-uuid exception - Error: {str(e)}")
+        
+        # Test GET non-existent product
+        log_info("Testing GET /api/inventory/00000000-0000-0000-0000-000000000000...")
+        try:
+            response = requests.get(
+                f"{BASE_URL}/api/inventory/00000000-0000-0000-0000-000000000000",
+                headers={**HEADERS, "Authorization": f"Bearer {token}"}
+            )
+            
+            if response.status_code == 404:
+                log_success("GET /api/inventory/non-existent correctly returned 404")
+            else:
+                log_error(f"GET /api/inventory/non-existent should return 404 - Status: {response.status_code}")
+        except Exception as e:
+            log_error(f"GET /api/inventory/non-existent exception - Error: {str(e)}")
+        
+        # Test PUT update product
+        log_info(f"Testing PUT /api/inventory/{created_product_id}...")
+        update_data = {
+            "price": 29.99,
+            "description": "Updated test product description",
+            "category": "food"
+        }
+        
+        try:
+            response = requests.put(
+                f"{BASE_URL}/api/inventory/{created_product_id}",
+                headers={**HEADERS, "Authorization": f"Bearer {token}"},
+                json=update_data
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                updated_price = data.get('data', {}).get('price')
+                log_success(f"PUT /api/inventory/{created_product_id} - Updated price: €{updated_price}")
+            else:
+                log_error(f"PUT /api/inventory/{created_product_id} failed - Status: {response.status_code}")
+        except Exception as e:
+            log_error(f"PUT /api/inventory/{created_product_id} exception - Error: {str(e)}")
+        
+        # Test PUT update product with invalid data
+        log_info(f"Testing PUT /api/inventory/{created_product_id} with invalid data...")
+        invalid_update_data = {
+            "price": -10.00  # Negative price should be rejected
+        }
+        
+        try:
+            response = requests.put(
+                f"{BASE_URL}/api/inventory/{created_product_id}",
+                headers={**HEADERS, "Authorization": f"Bearer {token}"},
+                json=invalid_update_data
+            )
+            
+            if response.status_code == 400:
+                log_success(f"PUT /api/inventory/{created_product_id} correctly rejected invalid price")
+            else:
+                log_error(f"PUT /api/inventory/{created_product_id} should reject negative price - Status: {response.status_code}")
+        except Exception as e:
+            log_error(f"PUT /api/inventory/{created_product_id} invalid data test exception - Error: {str(e)}")
+        
+        # Test PUT without authentication
+        log_info(f"Testing PUT /api/inventory/{created_product_id} without authentication...")
+        try:
+            response = requests.put(
+                f"{BASE_URL}/api/inventory/{created_product_id}",
+                headers=HEADERS,
+                json=update_data
+            )
+            
+            if response.status_code == 401:
+                log_success(f"PUT /api/inventory/{created_product_id} correctly blocked without auth")
+            else:
+                log_error(f"PUT /api/inventory/{created_product_id} not blocked without auth - Status: {response.status_code}")
+        except Exception as e:
+            log_error(f"PUT /api/inventory/{created_product_id} no-auth test exception - Error: {str(e)}")
+        
+        # Test DELETE product
+        log_info(f"Testing DELETE /api/inventory/{created_product_id}...")
+        try:
+            response = requests.delete(
+                f"{BASE_URL}/api/inventory/{created_product_id}",
+                headers={**HEADERS, "Authorization": f"Bearer {token}"}
+            )
+            
+            if response.status_code == 200:
+                log_success(f"DELETE /api/inventory/{created_product_id} - Deleted successfully")
+            else:
+                log_error(f"DELETE /api/inventory/{created_product_id} failed - Status: {response.status_code}")
+        except Exception as e:
+            log_error(f"DELETE /api/inventory/{created_product_id} exception - Error: {str(e)}")
+        
+        # Test DELETE non-existent product
+        log_info(f"Testing DELETE /api/inventory/{created_product_id} again (should fail)...")
+        try:
+            response = requests.delete(
+                f"{BASE_URL}/api/inventory/{created_product_id}",
+                headers={**HEADERS, "Authorization": f"Bearer {token}"}
+            )
+            
+            if response.status_code == 404:
+                log_success(f"DELETE /api/inventory/{created_product_id} correctly returned 404 - already deleted")
+            else:
+                log_error(f"DELETE /api/inventory/{created_product_id} should return 404 - Status: {response.status_code}")
+        except Exception as e:
+            log_error(f"DELETE /api/inventory/{created_product_id} second delete exception - Error: {str(e)}")
+        
+        # Test DELETE without authentication
+        log_info("Testing DELETE /api/inventory/00000000-0000-0000-0000-000000000000 without authentication...")
+        try:
+            response = requests.delete(
+                f"{BASE_URL}/api/inventory/00000000-0000-0000-0000-000000000000",
+                headers=HEADERS
+            )
+            
+            if response.status_code == 401:
+                log_success("DELETE /api/inventory/ correctly blocked without auth")
+            else:
+                log_error(f"DELETE /api/inventory/ not blocked without auth - Status: {response.status_code}")
+        except Exception as e:
+            log_error(f"DELETE /api/inventory/ no-auth test exception - Error: {str(e)}")
+    
+    return created_product_id
+
 def print_summary():
     """Print test summary"""
     log_section("TEST SUMMARY")
@@ -856,6 +1128,9 @@ def main():
     
     # Test orders
     test_orders(token)
+    
+    # Test inventory/products
+    test_inventory(token)
         
     # Test user management
     created_user_id, new_user_token = test_user_management(token)

@@ -1,6 +1,7 @@
 from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
+from flasgger import Swagger
 from datetime import datetime, timezone
 import time
 import uuid
@@ -9,10 +10,11 @@ import os
 
 from config import config
 from models import db
+from swagger_config import swagger_template, swagger_config
 
 from models import User
 
-def wait_for_db(app, max_retries=30, delay=2):
+def wait_for_db(app, max_retries=10, delay=2):
     """Wait for database to be ready before proceeding"""
     print("Waiting for database to be ready...")
     
@@ -25,7 +27,7 @@ def wait_for_db(app, max_retries=30, delay=2):
                 return True
         except Exception as e:
             if attempt < max_retries - 1:
-                print(f"Database not ready yet (attempt {attempt + 1}/{max_retries}). Retrying in {delay}s...")
+                print(f"{e} Database not ready yet (attempt {attempt + 1}/{max_retries}). Retrying in {delay}s...")
                 time.sleep(delay)
             else:
                 print(f"Failed to connect to database after {max_retries} attempts")
@@ -82,6 +84,9 @@ def create_app(config_name='default'):
     CORS(app)
     jwt = JWTManager(app)
     
+    # Initialize Swagger
+    Swagger(app, template=swagger_template, config=swagger_config)
+    
     # JWT error handlers
     @jwt.expired_token_loader
     def expired_token_callback(jwt_header, jwt_payload):
@@ -120,11 +125,13 @@ def create_app(config_name='default'):
     from routes.menu import menu_bp
     from routes.orders import order_bp
     from routes.users import user_bp
+    from routes.inventory import inventory_bp
     
     app.register_blueprint(auth_bp, url_prefix='/api/auth')
     app.register_blueprint(menu_bp, url_prefix='/api/menu')
     app.register_blueprint(order_bp, url_prefix='/api/orders')
     app.register_blueprint(user_bp, url_prefix='/api/users')
+    app.register_blueprint(inventory_bp, url_prefix='/api/inventory')
     
     # Root endpoint
     @app.route('/')
@@ -174,6 +181,13 @@ def create_app(config_name='default'):
                     'PUT /api/orders/{id}/items/{item_id}/status': 'Update order item status (chef, manager)',
                     'POST /api/orders/{id}/pay': 'Process payment (cashier, manager)',
                     'DELETE /api/orders/{id}': 'Delete order'
+                },
+                'inventory': {
+                    'GET /api/inventory/': 'Get all products',
+                    'GET /api/inventory/{id}': 'Get product by ID',
+                    'POST /api/inventory/': 'Create new product',
+                    'PUT /api/inventory/{id}': 'Update product',
+                    'DELETE /api/inventory/{id}': 'Delete product'
                 }
             }
         })

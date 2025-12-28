@@ -1,8 +1,22 @@
 from flask import Blueprint, request, jsonify
 from flask_jwt_extended import get_jwt_identity
+from flasgger import swag_from
+from docs.user_docs import (
+    get_all_users_spec,
+    get_current_user_spec,
+    get_user_by_id_spec,
+    update_user_spec,
+    delete_user_spec,
+    get_user_checkins_spec,
+    create_checkin_spec,
+    get_current_checkin_spec,
+    update_checkin_spec,
+    delete_checkin_spec
+)
 from models import db, CheckIn, User
 from datetime import datetime, timezone
 from auth import role_required, authentication_required
+
 
 user_bp = Blueprint('users', __name__)
 
@@ -10,6 +24,7 @@ user_bp = Blueprint('users', __name__)
 
 @user_bp.route('/', methods=['GET'])
 @role_required('manager')
+@swag_from(get_all_users_spec)
 def get_users():
     """Get list of all users (Collection)"""
     try:
@@ -49,6 +64,7 @@ def create_user():
 
 @user_bp.route('/me', methods=['GET'])
 @authentication_required()
+@swag_from(get_current_user_spec)
 def get_current_user():
     """Get current authenticated user (special case)"""
     try:
@@ -75,6 +91,7 @@ def get_current_user():
 
 @user_bp.route('/<user_id>', methods=['GET'])
 @role_required('manager')
+@swag_from(get_user_by_id_spec)
 def get_user(user_id):
     """Get specific user by ID"""
     try:
@@ -100,6 +117,7 @@ def get_user(user_id):
 
 @user_bp.route('/<user_id>', methods=['PUT'])
 @role_required('manager')
+@swag_from(update_user_spec)
 def update_user(user_id):
     """Update user (full update)"""
     try:
@@ -161,6 +179,7 @@ def partial_update_user(user_id):
 
 @user_bp.route('/<user_id>', methods=['DELETE'])
 @role_required('manager')
+@swag_from(delete_user_spec)
 def delete_user(user_id):
     """Delete user"""
     try:
@@ -190,6 +209,7 @@ def delete_user(user_id):
 
 @user_bp.route('/<user_id>/checkins', methods=['GET'])
 @authentication_required()
+@swag_from(get_user_checkins_spec)
 def get_user_checkins(user_id):
     """Get all check-ins for a user"""
     try:
@@ -216,6 +236,7 @@ def get_user_checkins(user_id):
 
 @user_bp.route('/<user_id>/checkins', methods=['POST'])
 @authentication_required()
+@swag_from(create_checkin_spec)
 def create_checkin(user_id):
     """Create a new check-in"""
     current_user = None
@@ -264,6 +285,7 @@ def create_checkin(user_id):
 
 @user_bp.route('/<user_id>/checkins/current', methods=['GET'])
 @authentication_required()
+@swag_from(get_current_checkin_spec)
 def get_current_checkin(user_id):
     """Get currently active check-in"""
     try:
@@ -334,6 +356,7 @@ def get_checkin(user_id, checkin_id):
 
 @user_bp.route('/<user_id>/checkins/<checkin_id>', methods=['PUT'])
 @authentication_required()
+@swag_from(update_checkin_spec)
 def update_checkin(user_id, checkin_id):
     """Update check-in (add checkout time """
     try:
@@ -381,6 +404,7 @@ def update_checkin(user_id, checkin_id):
 
 @user_bp.route('/<user_id>/checkins/<checkin_id>', methods=['DELETE'])
 @role_required('manager')
+@swag_from(delete_checkin_spec)
 def delete_checkin(user_id, checkin_id):
     """Delete check-in (manager only)"""
     try:

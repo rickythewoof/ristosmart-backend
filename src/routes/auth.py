@@ -6,6 +6,8 @@ from flask_jwt_extended import (
     get_jwt_identity,
     get_jwt
 )
+from flasgger import swag_from
+from docs.auth_docs import login_spec, register_spec, get_roles_spec
 from models import db, User
 from auth import ROLES
 from datetime import datetime, timezone
@@ -20,6 +22,7 @@ auth_bp = Blueprint('auth', __name__)
 
 
 @auth_bp.route('/login', methods=['POST'])
+@swag_from(login_spec)
 def login():
     """User login with role-based authentication"""
     try:
@@ -82,6 +85,7 @@ def login():
 
 @auth_bp.route('/register', methods=['POST'])
 @role_required('manager')
+@swag_from(register_spec)
 def register():
     """Register new user - Only managers can create users"""
     try:
@@ -145,6 +149,7 @@ def register():
 
 @auth_bp.route('/roles', methods=['GET'])
 @authentication_required()
+@swag_from(get_roles_spec)
 def get_roles():
     """Get available roles and their permissions"""
     claims = get_jwt()

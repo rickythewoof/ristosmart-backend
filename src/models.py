@@ -158,7 +158,7 @@ class OrderItem(db.Model):
     
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     order_id = db.Column(db.String(36), db.ForeignKey('orders.id'), nullable=False)
-    menu_item_id = db.Column(db.String(36), db.ForeignKey('menu_items.id'), nullable=False)
+    menu_item_id = db.Column(db.String(36), db.ForeignKey('menu_items.id', ondelete='CASCADE'), nullable=False)
     menu_item_name = db.Column(db.String(100), nullable=False)
     quantity = db.Column(db.Integer, nullable=False, default=1)
     unit_price = db.Column(db.Numeric(10, 2), nullable=False)
@@ -179,6 +179,33 @@ class OrderItem(db.Model):
             'total_price': float(self.total_price),
             'special_instructions': self.special_instructions,
             'status': self.status,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None
+        }
+
+# ============ PRODUCT MODEL ============
+class Product(db.Model):
+    __tablename__ = 'products'
+
+    id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    ean = db.Column(db.String(13), unique=True, nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.Text)
+    price = db.Column(db.Numeric(10, 2), nullable=False)
+    category = db.Column(db.String(50))
+    image_url = db.Column(db.String(255))
+    created_at = db.Column(db.DateTime, default=italy_now)
+    updated_at = db.Column(db.DateTime, default=italy_now, onupdate=italy_now)
+
+    def to_dict(self):
+        return {
+            'id': str(self.id),
+            'ean': self.ean,
+            'name': self.name,
+            'description': self.description,
+            'price': float(self.price),
+            'category': self.category,
+            'image_url': self.image_url,
             'created_at': self.created_at.isoformat() if self.created_at else None,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
