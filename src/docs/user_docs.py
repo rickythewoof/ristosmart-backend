@@ -14,8 +14,23 @@ get_all_users_spec = {
                 "type": "object",
                 "properties": {
                     "success": {"type": "boolean", "example": True},
-                    "data": {"type": "array"},
-                    "count": {"type": "integer"}
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {"type": "string", "format": "uuid"},
+                                "username": {"type": "string", "example": "john_waiter"},
+                                "email": {"type": "string", "example": "john@test.com"},
+                                "full_name": {"type": "string", "example": "John Doe"},
+                                "role": {"type": "string", "example": "waiter"},
+                                "is_active": {"type": "boolean", "example": True},
+                                "created_at": {"type": "string", "format": "date-time"},
+                                "updated_at": {"type": "string", "format": "date-time"}
+                            }
+                        }
+                    },
+                    "count": {"type": "integer", "example": 10}
                 }
             }
         }
@@ -34,7 +49,19 @@ get_current_user_spec = {
                 "type": "object",
                 "properties": {
                     "success": {"type": "boolean", "example": True},
-                    "data": {"type": "object"}
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "id": {"type": "string", "format": "uuid"},
+                            "username": {"type": "string", "example": "john_waiter"},
+                            "email": {"type": "string", "example": "john@test.com"},
+                            "full_name": {"type": "string", "example": "John Doe"},
+                            "role": {"type": "string", "example": "waiter"},
+                            "is_active": {"type": "boolean", "example": True},
+                            "created_at": {"type": "string", "format": "date-time"},
+                            "updated_at": {"type": "string", "format": "date-time"}
+                        }
+                    }
                 }
             }
         }
@@ -62,7 +89,19 @@ get_user_by_id_spec = {
                 "type": "object",
                 "properties": {
                     "success": {"type": "boolean", "example": True},
-                    "data": {"type": "object"}
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "id": {"type": "string", "format": "uuid"},
+                            "username": {"type": "string", "example": "john_waiter"},
+                            "email": {"type": "string", "example": "john@test.com"},
+                            "full_name": {"type": "string", "example": "John Doe"},
+                            "role": {"type": "string", "example": "waiter"},
+                            "is_active": {"type": "boolean", "example": True},
+                            "created_at": {"type": "string", "format": "date-time"},
+                            "updated_at": {"type": "string", "format": "date-time"}
+                        }
+                    }
                 }
             }
         },
@@ -169,8 +208,21 @@ get_user_checkins_spec = {
                 "type": "object",
                 "properties": {
                     "success": {"type": "boolean", "example": True},
-                    "data": {"type": "array"},
-                    "count": {"type": "integer"}
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {"type": "string", "format": "uuid"},
+                                "user_id": {"type": "string", "format": "uuid"},
+                                "check_in_time": {"type": "string", "format": "date-time"},
+                                "check_out_time": {"type": "string", "format": "date-time"},
+                                "created_at": {"type": "string", "format": "date-time"},
+                                "updated_at": {"type": "string", "format": "date-time"}
+                            }
+                        }
+                    },
+                    "count": {"type": "integer", "example": 25}
                 }
             }
         }
@@ -228,7 +280,17 @@ get_current_checkin_spec = {
                 "type": "object",
                 "properties": {
                     "success": {"type": "boolean", "example": True},
-                    "data": {"type": "object"}
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "id": {"type": "string", "format": "uuid"},
+                            "user_id": {"type": "string", "format": "uuid"},
+                            "check_in_time": {"type": "string", "format": "date-time"},
+                            "check_out_time": {"type": "string", "format": "date-time"},
+                            "created_at": {"type": "string", "format": "date-time"},
+                            "updated_at": {"type": "string", "format": "date-time"}
+                        }
+                    }
                 }
             }
         },

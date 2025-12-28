@@ -36,9 +36,13 @@ login_spec = {
                 "properties": {
                     "success": {"type": "boolean", "example": True},
                     "access_token": {"type": "string", "example": "eyJ0eXAiOiJKV1QiLCJhbGc..."},
+                    "refresh_token": {"type": "string", "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6I..."},
                     "user": {
                         "type": "object",
                         "properties": {
+                            "created_at": {"type": "string", "format": "date-time", "example": "2024-01-01T12:00:00Z"},
+                            "is_active": {"type": "boolean", "example": True},
+                            "last_login": {"type": "string", "format": "date-time", "example": "2024-01-01T12:00:00Z"},
                             "id": {"type": "string"},
                             "username": {"type": "string"},
                             "email": {"type": "string"},

@@ -14,6 +14,19 @@ get_all_orders_spec = {
             "type": "string",
             "enum": ["pending", "confirmed", "preparing", "ready", "delivered", "completed", "cancelled"],
             "description": "Filter by order status"
+        },
+        {
+            "name": "table_number",
+            "in": "query",
+            "type": "integer",
+            "description": "Filter by table number"
+        },
+        {
+            "name": "order_type",
+            "in": "query",
+            "type": "string",
+            "enum": ["dine_in", "takeaway", "delivery"],
+            "description": "Filter by order type"
         }
     ],
     "responses": {

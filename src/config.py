@@ -20,11 +20,41 @@ class Config:
     MANAGER_USER = os.getenv('MANAGER_USER', 'manager@ristosmart.it')
     MANAGER_PASSWORD = os.getenv('MANAGER_PASSWORD', 'changemeplease!')
 
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL') or \
-        f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    # Database URI configuration
+    DATABASE_URL = os.getenv('DATABASE_URL')
+    if DATABASE_URL:
+        # Fix for some cloud providers that use postgres:// instead of postgresql://
+        if DATABASE_URL.startswith('postgres://'):
+            DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
+        SQLALCHEMY_DATABASE_URI = DATABASE_URL
+    else:
+        SQLALCHEMY_DATABASE_URI = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+    
+    # SQLAlchemy configuration
+    SQLALCHEMY_TRACK_MODIFICATIONS = False
+    
+    # Get SSL mode from environment (disable, allow, prefer, require, verify-ca, verify-full)
+    DB_SSLMODE = os.getenv('DB_SSLMODE', 'prefer')
+    
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        'pool_pre_ping': True,
+        'pool_recycle': 300,
+        'pool_size': 10,
+        'max_overflow': 20,
+    }
+    
+    # Only add connect_args if not using local database
+    if DB_HOST not in ['localhost', '127.0.0.1', 'db']:
+        SQLALCHEMY_ENGINE_OPTIONS['connect_args'] = {
+            'sslmode': DB_SSLMODE,
+            'connect_timeout': 10
+        }
 
     PORT = int(os.environ.get('PORT', 3000))
     DEBUG = os.environ.get('FLASK_ENV') == 'development'
+
+    BASE_URL = os.getenv('BASE_URL', f'http://localhost:{PORT}')
+    SWAGGER_HOST = BASE_URL.replace('https://', '').replace('http://', '').rstrip('/')
 
     JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', 'super-secret-jwt-key-change-in-production')
     JWT_ACCESS_TOKEN_EXPIRES = timedelta(hours=8)

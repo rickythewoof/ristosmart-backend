@@ -84,7 +84,7 @@ def get_product(product_id):
         }), 500
 
 @inventory_bp.route('/', methods=['POST'])
-@permission_required('add_product')
+@permission_required('product.add')
 @swag_from(create_product_spec)
 def add_product():
     """Add new product"""
@@ -135,7 +135,7 @@ def add_product():
 
 @inventory_bp.route('/<product_id>', methods=['PUT'])
 @swag_from(update_product_spec)
-@permission_required('edit_product')
+@permission_required('product.edit')
 def update_product(product_id):
     """Update existing product"""
     try:
@@ -196,7 +196,7 @@ def update_product(product_id):
 
 @inventory_bp.route('/<product_id>', methods=['DELETE'])
 @swag_from(delete_product_spec)
-@permission_required('delete_product')
+@permission_required('product.delete')
 def delete_product(product_id):
     """Delete product"""
     try:

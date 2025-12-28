@@ -2,6 +2,12 @@
 Swagger/OpenAPI Configuration for RistoSmart API
 Complete API documentation with examples for all endpoints
 """
+import os
+
+# Get SWAGGER_HOST from environment or config
+BASE_URL = os.getenv('BASE_URL', 'http://localhost:3000')
+SWAGGER_HOST = BASE_URL.replace('https://', '').replace('http://', '').rstrip('/')
+SWAGGER_SCHEME = 'https' if 'https://' in BASE_URL else 'http'
 
 swagger_template = {
     "swagger": "2.0",
@@ -11,15 +17,15 @@ swagger_template = {
                       "This API provides endpoints for managing menu items, orders, users, inventory, and check-ins.",
         "version": "1.0.0",
     },
-    "host": "localhost:3000",
+    "host": SWAGGER_HOST,
     "basePath": "/api",
-    "schemes": ["http", "https"],
+    "schemes": [SWAGGER_SCHEME, "http"] if SWAGGER_SCHEME == "https" else ["http"],
     "securityDefinitions": {
         "Bearer": {
             "type": "apiKey",
             "name": "Authorization",
             "in": "header",
-            "description": "JWT Authorization header using the Bearer scheme. Example: 'Bearer {token}'"
+            "description": "JWT Authorization header. Enter: Bearer YOUR_TOKEN_HERE"
         }
     },
     "tags": [

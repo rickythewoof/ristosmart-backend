@@ -81,7 +81,15 @@ def create_app(config_name='default'):
     
     # Initialize extensions
     db.init_app(app)
-    CORS(app)
+    CORS(app, resources={
+        r"/*": {
+            "origins": "*",
+            "methods": ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+            "allow_headers": ["Content-Type", "Authorization"],
+            "expose_headers": ["Content-Type", "Authorization"],
+            "supports_credentials": True
+        }
+    })
     jwt = JWTManager(app)
     
     # Initialize Swagger
