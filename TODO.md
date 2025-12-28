@@ -1,2 +1,0 @@
-- Implement Tables (need to do this in backend?)
-- Implement inventory
