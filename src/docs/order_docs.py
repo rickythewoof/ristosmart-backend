@@ -12,7 +12,7 @@ get_all_orders_spec = {
             "name": "status",
             "in": "query",
             "type": "string",
-            "enum": ["pending", "confirmed", "preparing", "ready", "delivered", "completed", "cancelled"],
+            "enum": ["preparing", "ready", "delivered"],
             "description": "Filter by order status"
         },
         {
@@ -152,7 +152,7 @@ update_order_status_spec = {
                 "properties": {
                     "status": {
                         "type": "string",
-                        "enum": ["pending", "confirmed", "preparing", "ready", "delivered", "completed", "cancelled"],
+                        "enum": ["preparing", "ready", "delivered"],
                         "example": "preparing"
                     }
                 }
@@ -208,7 +208,7 @@ update_order_item_status_spec = {
                 "properties": {
                     "status": {
                         "type": "string",
-                        "enum": ["pending", "preparing", "ready", "served", "cancelled"],
+                        "enum": ["preparing", "ready", "delivered"],
                         "example": "ready"
                     }
                 }

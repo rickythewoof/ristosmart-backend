@@ -118,8 +118,8 @@ class Order(db.Model):
     order_number = db.Column(db.String(50), unique=True, nullable=False)
     table_number = db.Column(db.Integer)
     customer_name = db.Column(db.String(100))
-    status = db.Column(db.Enum('pending', 'confirmed', 'preparing', 'ready', 'delivered', 'payed', 'cancelled', name='order_status'), 
-                      default='pending', nullable=False)
+    status = db.Column(db.Enum('preparing', 'ready', 'delivered', 'payed', 'cancelled', name='order_status'), 
+                      default='preparing', nullable=False)
     order_type = db.Column(db.Enum('dine_in', 'takeout', 'delivery', name='order_type'), default='dine_in', nullable=False)
     total_amount = db.Column(db.Numeric(10, 2), default=0)
     tax_amount = db.Column(db.Numeric(10, 2), default=0)
@@ -164,8 +164,8 @@ class OrderItem(db.Model):
     unit_price = db.Column(db.Numeric(10, 2), nullable=False)
     total_price = db.Column(db.Numeric(10, 2), nullable=False)
     special_instructions = db.Column(db.Text)
-    status = db.Column(db.Enum('pending', 'preparing', 'ready', 'served', 'cancelled', name='order_item_status'), 
-                      default='pending', nullable=False)
+    status = db.Column(db.Enum('preparing', 'ready', 'delivered', 'cancelled', name='order_item_status'), 
+                      default='preparing', nullable=False)
     created_at = db.Column(db.DateTime, default=italy_now)
     updated_at = db.Column(db.DateTime, default=italy_now, onupdate=italy_now)
 

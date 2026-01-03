@@ -6,8 +6,15 @@ import requests
 import json
 import sys
 import os
+from pathlib import Path
+from dotenv import load_dotenv
 
-# Configuration
+
+project_root = Path(__file__).parent.parent.parent
+env_path = project_root / '.env'
+
+load_dotenv(dotenv_path=env_path)
+
 BASE_URL = os.getenv('BASE_URL', 'http://localhost:3000')
 API_URL = f"{BASE_URL}/api"
 

@@ -55,10 +55,10 @@ class OrderSchema(Schema):
         unknown = 'exclude'
 
 class OrderStatusUpdateSchema(Schema):
-    status = fields.Str(required=True, validate=lambda x: x in ['pending', 'confirmed', 'preparing', 'ready', 'delivered', 'payed', 'cancelled'])
+    status = fields.Str(required=True, validate=lambda x: x in ['preparing', 'ready', 'delivered', 'cancelled'])
 
 class OrderItemStatusUpdateSchema(Schema):
-    status = fields.Str(required=True, validate=lambda x: x in ['pending', 'preparing', 'ready', 'served', 'cancelled'])
+    status = fields.Str(required=True, validate=lambda x: x in ['preparing', 'ready', 'delivered', 'cancelled'])
 
 class PaymentSchema(Schema):
     payment_method = fields.Str(missing='cash')
@@ -106,7 +106,7 @@ def get_all_orders():
         
         if status:
             if status == 'active':
-                query = query.filter(Order.status.in_(['pending', 'confirmed', 'preparing']))
+                query = query.filter(Order.status.in_(['preparing']))
             else:
                 query = query.filter(Order.status == status)
         
@@ -230,7 +230,7 @@ def create_order():
             table_number=validated_data['table_number'],
             customer_name=validated_data.get('customer_name'),
             order_type=validated_data['order_type'],
-            status='confirmed',
+            status='preparing',
             total_amount=total_amount,
             discount_amount=discount_amount,
             final_amount=final_amount,
@@ -286,7 +286,7 @@ def create_order():
 
 
 @order_bp.route('/<string:order_id>/status', methods=['PUT'])
-@permission_required('order.update_status')
+@permission_required('order.update')
 @swag_from(update_order_status_spec)
 def update_order_status(order_id):
     """Update order status - PROTECTED: Chef, Manager"""
@@ -327,10 +327,8 @@ def update_order_status(order_id):
         order.status = new_status
         
         if new_status in ['preparing', 'ready', 'delivered']:
-            item_status = new_status if new_status != 'confirmed' else 'pending'
-            for item in order.items:
-                if item.status == 'pending':
-                    item.status = item_status
+           for item in order.items:
+               item.status = new_status
         
         db.session.commit()
         
@@ -353,10 +351,10 @@ def update_order_status(order_id):
 
 
 @order_bp.route('/<string:order_id>/items/<string:item_id>/status', methods=['PUT'])
-@permission_required('order.update_status')
+@permission_required('order.update')
 @swag_from(update_order_item_status_spec)
 def update_order_item_status(order_id, item_id):
-    """Update order item status - PROTECTED: Chef, Manager"""
+    """Update order item status - PROTECTED"""
     try:
         claims = get_jwt()
         user_id = claims.get('sub')
@@ -402,7 +400,7 @@ def update_order_item_status(order_id, item_id):
         
         order_item.status = new_status
         
-        all_items_ready = all(item.status in ['ready', 'served'] for item in order.items)
+        all_items_ready = all(item.status in ['ready', 'delivered'] for item in order.items)
         
         if all_items_ready and order.status != 'ready':
             order.status = 'ready'
@@ -532,10 +530,10 @@ def delete_order(order_id):
                 'message': 'Order not found'
             }), 404
         
-        if order.status not in ['pending', 'cancelled']:
+        if order.status not in ['preparing', 'cancelled']:
             return jsonify({
                 'success': False,
-                'message': 'Can only delete pending or cancelled orders'
+                'message': 'Can only delete preparing or cancelled orders'
             }), 400
         
         order_number = order.order_number

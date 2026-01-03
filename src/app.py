@@ -227,6 +227,10 @@ def create_app(config_name='default'):
             'error': 'internal_error'
         }), 500
     
+    @app.route('/favicon.ico')
+    def favicon():
+        return app.send_static_file('favicon.ico')
+
     # Create tables
     with app.app_context():
         if not wait_for_db(app):

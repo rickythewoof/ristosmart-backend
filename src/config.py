@@ -34,20 +34,25 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # Get SSL mode from environment (disable, allow, prefer, require, verify-ca, verify-full)
-    DB_SSLMODE = os.getenv('DB_SSLMODE', 'prefer')
+    DB_SSLMODE = os.getenv('DB_SSLMODE', 'disable')  # Changed default to 'disable' for Cloud Run
     
     SQLALCHEMY_ENGINE_OPTIONS = {
-        'pool_pre_ping': True,
-        'pool_recycle': 300,
-        'pool_size': 10,
-        'max_overflow': 20,
+        'pool_pre_ping': True,  # Test connections before using them
+        'pool_recycle': 280,    # Recycle connections before they timeout (Cloud SQL timeout is 300s)
+        'pool_size': 5,         # Reduced for Cloud Run (serverless)
+        'max_overflow': 10,     # Reduced overflow
+        'pool_timeout': 30,     # Add timeout for getting connection from pool
     }
     
     # Only add connect_args if not using local database
     if DB_HOST not in ['localhost', '127.0.0.1', 'db']:
         SQLALCHEMY_ENGINE_OPTIONS['connect_args'] = {
             'sslmode': DB_SSLMODE,
-            'connect_timeout': 10
+            'connect_timeout': 10,
+            'keepalives': 1,           # Enable TCP keepalives
+            'keepalives_idle': 30,     # Start keepalives after 30s
+            'keepalives_interval': 10, # Send keepalive every 10s
+            'keepalives_count': 5      # Drop connection after 5 failed keepalives
         }
 
     PORT = int(os.environ.get('PORT', 3000))

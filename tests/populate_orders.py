@@ -8,6 +8,14 @@ import sys
 import os
 import random
 from datetime import datetime, timedelta
+from pathlib import Path
+from dotenv import load_dotenv
+
+
+project_root = Path(__file__).parent.parent.parent
+env_path = project_root / '.env'
+
+load_dotenv(dotenv_path=env_path)
 
 # Configuration
 BASE_URL = os.getenv('BASE_URL', 'http://localhost:3000')
@@ -48,7 +56,7 @@ CUSTOMER_NAMES = [
 ORDER_TYPES = ["dine_in", "takeout", "delivery"]
 
 # Sample order statuses (for demonstration)
-ORDER_STATUSES = ["pending", "confirmed", "preparing", "ready", "delivered"]
+ORDER_STATUSES = ["preparing", "ready", "delivered"]
 
 
 def login():
