@@ -22,7 +22,15 @@ class Config:
 
     # Database URI configuration
     DATABASE_URL = os.getenv('DATABASE_URL')
-    if DATABASE_URL:
+    
+    # Check if running on Cloud Run (Cloud SQL Unix socket)
+    INSTANCE_UNIX_SOCKET = os.getenv('INSTANCE_UNIX_SOCKET')
+    
+    if INSTANCE_UNIX_SOCKET:
+        # Cloud Run with Cloud SQL Unix Socket (più affidabile)
+        # Formato corretto per Cloud SQL Proxy Unix Socket
+        SQLALCHEMY_DATABASE_URI = f"postgresql+psycopg2://{DB_USER}:{DB_PASSWORD}@/{DB_NAME}?unix_sock={INSTANCE_UNIX_SOCKET}/.s.PGSQL.5432"
+    elif DATABASE_URL:
         # Fix for some cloud providers that use postgres:// instead of postgresql://
         if DATABASE_URL.startswith('postgres://'):
             DATABASE_URL = DATABASE_URL.replace('postgres://', 'postgresql://', 1)
@@ -32,27 +40,31 @@ class Config:
     
     # SQLAlchemy configuration
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ECHO = False
     
-    # Get SSL mode from environment (disable, allow, prefer, require, verify-ca, verify-full)
-    DB_SSLMODE = os.getenv('DB_SSLMODE', 'disable')  # Changed default to 'disable' for Cloud Run
+    # Get SSL mode from environment
+    DB_SSLMODE = os.getenv('DB_SSLMODE', 'disable')
     
+    # Connection pool configuration optimized for Cloud Run
     SQLALCHEMY_ENGINE_OPTIONS = {
-        'pool_pre_ping': True,  # Test connections before using them
-        'pool_recycle': 280,    # Recycle connections before they timeout (Cloud SQL timeout is 300s)
-        'pool_size': 5,         # Reduced for Cloud Run (serverless)
-        'max_overflow': 10,     # Reduced overflow
-        'pool_timeout': 30,     # Add timeout for getting connection from pool
+        'pool_pre_ping': True,       # Test connections before using
+        'pool_recycle': 300,         # Match Cloud SQL timeout
+        'pool_size': 5,              # Small pool for serverless
+        'max_overflow': 2,           # Limited overflow
+        'pool_timeout': 30,
+        'isolation_level': 'READ COMMITTED',  # Prevent transaction issues
     }
     
-    # Only add connect_args if not using local database
-    if DB_HOST not in ['localhost', '127.0.0.1', 'db']:
+    # Add SSL/TCP configs only if NOT using Unix socket and NOT localhost
+    if not INSTANCE_UNIX_SOCKET and DB_HOST not in ['localhost', '127.0.0.1', 'db']:
         SQLALCHEMY_ENGINE_OPTIONS['connect_args'] = {
             'sslmode': DB_SSLMODE,
             'connect_timeout': 10,
-            'keepalives': 1,           # Enable TCP keepalives
-            'keepalives_idle': 30,     # Start keepalives after 30s
-            'keepalives_interval': 10, # Send keepalive every 10s
-            'keepalives_count': 5      # Drop connection after 5 failed keepalives
+            'keepalives': 1,
+            'keepalives_idle': 30,
+            'keepalives_interval': 10,
+            'keepalives_count': 5,
+            'options': '-c statement_timeout=30000'  # 30s statement timeout
         }
 
     PORT = int(os.environ.get('PORT', 3000))
@@ -75,10 +87,8 @@ class DevelopmentConfig(Config):
 class ProductionConfig(Config):
     DEBUG = False
 
-
 config = {
     'development': DevelopmentConfig,
     'production': ProductionConfig,
     'default': DevelopmentConfig
-
 }

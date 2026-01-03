@@ -8,7 +8,7 @@ ROLES = {
         'description': 'Full access to all operations'
     },
     'chef': {
-        'permissions': ['menu.read', 'menu.create', 'menu.update', 'order.read', 'product.add', 'product.edit', 'product.delete'],
+        'permissions': ['menu.read', 'menu.create', 'menu.update', 'order.update', 'order.read', 'product.add', 'product.edit', 'product.delete'],
         'description': 'Manage menu and order preparation'
     },
     'waiter': {

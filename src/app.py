@@ -205,10 +205,38 @@ def create_app(config_name='default'):
     def health_check():
         return jsonify({
             'status': 'healthy',
-            'service': 'ristosmart-unified-backend',
+            'service': 'ristosmart-backend',
             'timestamp': datetime.now(timezone.utc).isoformat(),
             'uptime': time.process_time()
         })
+    @app.teardown_appcontext
+    def shutdown_session(exception=None):
+        try:
+            if exception:
+                db.session.rollback()
+        except Exception as e:
+            app.logger.error(f"Error during session rollback: {e}")
+        finally:
+            try:
+                db.session.remove()
+            except Exception as e:
+                app.logger.error(f"Error during session removal: {e}")
+    
+    # Error handlers
+    @app.errorhandler(Exception)
+    def handle_exception(e):
+        # Rollback on any unhandled exception
+        try:
+            db.session.rollback()
+        except:
+            pass
+        
+        app.logger.error(f"Unhandled exception: {e}", exc_info=True)
+        return jsonify({
+            'success': False,
+            'message': 'Internal server error',
+            'error': str(type(e).__name__)
+        }), 500
     
     # Error handlers
     @app.errorhandler(404)
