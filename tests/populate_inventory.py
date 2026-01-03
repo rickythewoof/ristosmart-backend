@@ -30,6 +30,7 @@ INVENTORY_PRODUCTS = [
         "name": "Coca Cola 33cl",
         "description": "Coca Cola lattina 33cl",
         "price": 2.50,
+        "quantity": 120,
         "category": "Bevande",
         "image_url": None
     },
@@ -38,6 +39,7 @@ INVENTORY_PRODUCTS = [
         "name": "Coca Cola Zero 33cl",
         "description": "Coca Cola Zero lattina 33cl",
         "price": 2.50,
+        "quantity": 80,
         "category": "Bevande",
         "image_url": None
     },
@@ -46,6 +48,7 @@ INVENTORY_PRODUCTS = [
         "name": "Fanta 33cl",
         "description": "Fanta arancia lattina 33cl",
         "price": 2.50,
+        "quantity": 50,
         "category": "Bevande",
         "image_url": None
     },
@@ -54,6 +57,7 @@ INVENTORY_PRODUCTS = [
         "name": "Sprite 33cl",
         "description": "Sprite lattina 33cl",
         "price": 2.50,
+        "quantity": 50,
         "category": "Bevande",
         "image_url": None
     },
@@ -62,6 +66,7 @@ INVENTORY_PRODUCTS = [
         "name": "Acqua Naturale San Benedetto 1L",
         "description": "Acqua minerale naturale San Benedetto 1 litro",
         "price": 1.50,
+        "quantity": 50,
         "category": "Bevande",
         "image_url": None
     },
@@ -70,6 +75,7 @@ INVENTORY_PRODUCTS = [
         "name": "Acqua Frizzante San Benedetto 1L",
         "description": "Acqua minerale frizzante San Benedetto 1 litro",
         "price": 1.50,
+        "quantity": 50,
         "category": "Bevande",
         "image_url": None
     },
@@ -78,6 +84,7 @@ INVENTORY_PRODUCTS = [
         "name": "Birra Moretti 33cl",
         "description": "Birra Moretti bottiglia 33cl",
         "price": 3.50,
+        "quantity": 50,
         "category": "Bevande",
         "image_url": None
     },
@@ -86,6 +93,7 @@ INVENTORY_PRODUCTS = [
         "name": "Birra Peroni 33cl",
         "description": "Birra Peroni bottiglia 33cl",
         "price": 3.50,
+        "quantity": 50,
         "category": "Bevande",
         "image_url": None
     },
@@ -94,6 +102,7 @@ INVENTORY_PRODUCTS = [
         "name": "Chinotto Lurisia 27.5cl",
         "description": "Chinotto Lurisia bottiglia 27.5cl",
         "price": 3.00,
+        "quantity": 50,
         "category": "Bevande",
         "image_url": None
     },
@@ -102,6 +111,7 @@ INVENTORY_PRODUCTS = [
         "name": "Aranciata San Pellegrino 33cl",
         "description": "Aranciata San Pellegrino lattina 33cl",
         "price": 2.50,
+        "quantity": 50,
         "category": "Bevande",
         "image_url": None
     },
@@ -110,6 +120,7 @@ INVENTORY_PRODUCTS = [
         "name": "Limonata San Pellegrino 33cl",
         "description": "Limonata San Pellegrino lattina 33cl",
         "price": 2.50,
+        "quantity": 50,
         "category": "Bevande",
         "image_url": None
     },
@@ -120,6 +131,7 @@ INVENTORY_PRODUCTS = [
         "name": "Spaghetti Barilla 500g",
         "description": "Spaghetti n.5 Barilla 500g",
         "price": 1.20,
+        "quantity": 50,
         "category": "Pasta",
         "image_url": None
     },
@@ -128,6 +140,7 @@ INVENTORY_PRODUCTS = [
         "name": "Penne Rigate Barilla 500g",
         "description": "Penne Rigate Barilla 500g",
         "price": 1.20,
+        "quantity": 50,
         "category": "Pasta",
         "image_url": None
     },
@@ -136,6 +149,7 @@ INVENTORY_PRODUCTS = [
         "name": "Fusilli Barilla 500g",
         "description": "Fusilli Barilla 500g",
         "price": 1.20,
+        "quantity": 50,
         "category": "Pasta",
         "image_url": None
     },
@@ -144,6 +158,7 @@ INVENTORY_PRODUCTS = [
         "name": "Farfalle Barilla 500g",
         "description": "Farfalle Barilla 500g",
         "price": 1.20,
+        "quantity": 50,
         "category": "Pasta",
         "image_url": None
     },
@@ -152,6 +167,7 @@ INVENTORY_PRODUCTS = [
         "name": "Riso Arborio Gallo 1kg",
         "description": "Riso Arborio per risotti Gallo 1kg",
         "price": 3.50,
+        "quantity": 50,
         "category": "Riso",
         "image_url": None
     },
@@ -160,6 +176,7 @@ INVENTORY_PRODUCTS = [
         "name": "Riso Carnaroli Gallo 1kg",
         "description": "Riso Carnaroli per risotti Gallo 1kg",
         "price": 4.50,
+        "quantity": 50,
         "category": "Riso",
         "image_url": None
     },
@@ -170,6 +187,7 @@ INVENTORY_PRODUCTS = [
         "name": "Pomodoro Pelato Mutti 400g",
         "description": "Pomodoro pelato italiano Mutti 400g",
         "price": 1.50,
+        "quantity": 50,
         "category": "Conserve",
         "image_url": None
     },
@@ -178,6 +196,7 @@ INVENTORY_PRODUCTS = [
         "name": "Passata di Pomodoro Mutti 700g",
         "description": "Passata di pomodoro Mutti 700g",
         "price": 1.80,
+        "quantity": 50,
         "category": "Conserve",
         "image_url": None
     },
@@ -186,6 +205,7 @@ INVENTORY_PRODUCTS = [
         "name": "Sugo Basilico Barilla 400g",
         "description": "Sugo al basilico Barilla 400g",
         "price": 2.20,
+        "quantity": 50,
         "category": "Salse",
         "image_url": None
     },
@@ -194,6 +214,7 @@ INVENTORY_PRODUCTS = [
         "name": "Pesto alla Genovese Barilla 190g",
         "description": "Pesto alla genovese Barilla 190g",
         "price": 3.50,
+        "quantity": 50,
         "category": "Salse",
         "image_url": None
     },
@@ -202,6 +223,7 @@ INVENTORY_PRODUCTS = [
         "name": "Olio Extra Vergine d'Oliva Monini 750ml",
         "description": "Olio extra vergine d'oliva Monini 750ml",
         "price": 8.50,
+        "quantity": 50,
         "category": "Condimenti",
         "image_url": None
     },
@@ -210,6 +232,7 @@ INVENTORY_PRODUCTS = [
         "name": "Aceto Balsamico di Modena Ponti 500ml",
         "description": "Aceto balsamico di Modena IGP Ponti 500ml",
         "price": 4.50,
+        "quantity": 50,
         "category": "Condimenti",
         "image_url": None
     },
@@ -220,6 +243,7 @@ INVENTORY_PRODUCTS = [
         "name": "Parmigiano Reggiano DOP 200g",
         "description": "Parmigiano Reggiano DOP grattugiato 200g",
         "price": 5.50,
+        "quantity": 50,
         "category": "Formaggi",
         "image_url": None
     },
@@ -228,6 +252,7 @@ INVENTORY_PRODUCTS = [
         "name": "Grana Padano DOP 200g",
         "description": "Grana Padano DOP grattugiato 200g",
         "price": 4.80,
+        "quantity": 50,
         "category": "Formaggi",
         "image_url": None
     },
@@ -236,6 +261,7 @@ INVENTORY_PRODUCTS = [
         "name": "Mozzarella di Bufala DOP 250g",
         "description": "Mozzarella di bufala campana DOP 250g",
         "price": 4.50,
+        "quantity": 50,
         "category": "Formaggi",
         "image_url": None
     },
@@ -244,6 +270,7 @@ INVENTORY_PRODUCTS = [
         "name": "Mozzarella Fior di Latte 250g",
         "description": "Mozzarella fior di latte 250g",
         "price": 2.50,
+        "quantity": 50,
         "category": "Formaggi",
         "image_url": None
     },
@@ -252,6 +279,7 @@ INVENTORY_PRODUCTS = [
         "name": "Pecorino Romano DOP 200g",
         "description": "Pecorino Romano DOP grattugiato 200g",
         "price": 5.00,
+        "quantity": 50,
         "category": "Formaggi",
         "image_url": None
     },
@@ -260,6 +288,7 @@ INVENTORY_PRODUCTS = [
         "name": "Mascarpone 250g",
         "description": "Mascarpone 250g",
         "price": 3.20,
+        "quantity": 50,
         "category": "Formaggi",
         "image_url": None
     },
@@ -270,6 +299,7 @@ INVENTORY_PRODUCTS = [
         "name": "Prosciutto Crudo di Parma DOP 100g",
         "description": "Prosciutto crudo di Parma DOP affettato 100g",
         "price": 6.50,
+        "quantity": 50,
         "category": "Salumi",
         "image_url": None
     },
@@ -278,6 +308,7 @@ INVENTORY_PRODUCTS = [
         "name": "Prosciutto Cotto Alta Qualità 100g",
         "description": "Prosciutto cotto alta qualità affettato 100g",
         "price": 3.50,
+        "quantity": 50,
         "category": "Salumi",
         "image_url": None
     },
@@ -286,6 +317,7 @@ INVENTORY_PRODUCTS = [
         "name": "Salame Napoli 100g",
         "description": "Salame Napoli affettato 100g",
         "price": 4.00,
+        "quantity": 50,
         "category": "Salumi",
         "image_url": None
     },
@@ -294,6 +326,7 @@ INVENTORY_PRODUCTS = [
         "name": "Speck Alto Adige IGP 100g",
         "description": "Speck Alto Adige IGP affettato 100g",
         "price": 5.50,
+        "quantity": 50,
         "category": "Salumi",
         "image_url": None
     },
@@ -302,6 +335,7 @@ INVENTORY_PRODUCTS = [
         "name": "Mortadella Bologna IGP 100g",
         "description": "Mortadella Bologna IGP affettata 100g",
         "price": 3.00,
+        "quantity": 50,
         "category": "Salumi",
         "image_url": None
     },
@@ -312,6 +346,7 @@ INVENTORY_PRODUCTS = [
         "name": "Farina 00 per Pizza 1kg",
         "description": "Farina di grano tenero tipo 00 per pizza 1kg",
         "price": 1.20,
+        "quantity": 50,
         "category": "Farine",
         "image_url": None
     },
@@ -320,6 +355,7 @@ INVENTORY_PRODUCTS = [
         "name": "Farina Manitoba 1kg",
         "description": "Farina Manitoba per lievitati 1kg",
         "price": 2.50,
+        "quantity": 50,
         "category": "Farine",
         "image_url": None
     },
@@ -328,6 +364,7 @@ INVENTORY_PRODUCTS = [
         "name": "Semola Rimacinata 1kg",
         "description": "Semola rimacinata di grano duro 1kg",
         "price": 1.80,
+        "quantity": 50,
         "category": "Farine",
         "image_url": None
     },
@@ -336,6 +373,7 @@ INVENTORY_PRODUCTS = [
         "name": "Lievito di Birra Fresco 25g",
         "description": "Lievito di birra fresco 25g",
         "price": 0.30,
+        "quantity": 50,
         "category": "Lieviti",
         "image_url": None
     },
@@ -344,6 +382,7 @@ INVENTORY_PRODUCTS = [
         "name": "Lievito Istantaneo per Dolci 16g",
         "description": "Lievito istantaneo per dolci Pane degli Angeli 16g",
         "price": 0.80,
+        "quantity": 50,
         "category": "Lieviti",
         "image_url": None
     },
@@ -354,6 +393,7 @@ INVENTORY_PRODUCTS = [
         "name": "Concentrato di Pomodoro Mutti 200g",
         "description": "Concentrato di pomodoro Mutti doppio concentrato 200g",
         "price": 1.50,
+        "quantity": 50,
         "category": "Conserve",
         "image_url": None
     },
@@ -362,6 +402,7 @@ INVENTORY_PRODUCTS = [
         "name": "Sale Fino 1kg",
         "description": "Sale fino da cucina 1kg",
         "price": 0.50,
+        "quantity": 50,
         "category": "Condimenti",
         "image_url": None
     },
@@ -370,6 +411,7 @@ INVENTORY_PRODUCTS = [
         "name": "Sale Grosso 1kg",
         "description": "Sale grosso da cucina 1kg",
         "price": 0.50,
+        "quantity": 50,
         "category": "Condimenti",
         "image_url": None
     },
@@ -378,6 +420,7 @@ INVENTORY_PRODUCTS = [
         "name": "Zucchero Semolato 1kg",
         "description": "Zucchero semolato 1kg",
         "price": 1.20,
+        "quantity": 50,
         "category": "Dolci",
         "image_url": None
     },
@@ -386,6 +429,7 @@ INVENTORY_PRODUCTS = [
         "name": "Uova Fresche Categoria A 6 pezzi",
         "description": "Uova fresche di gallina categoria A, confezione da 6",
         "price": 2.50,
+        "quantity": 50,
         "category": "Freschi",
         "image_url": None
     },
@@ -394,6 +438,7 @@ INVENTORY_PRODUCTS = [
         "name": "Burro 250g",
         "description": "Burro di prima qualità 250g",
         "price": 2.80,
+        "quantity": 50,
         "category": "Latticini",
         "image_url": None
     },
@@ -402,6 +447,7 @@ INVENTORY_PRODUCTS = [
         "name": "Panna da Cucina 200ml",
         "description": "Panna fresca da cucina 200ml",
         "price": 1.50,
+        "quantity": 50,
         "category": "Latticini",
         "image_url": None
     },
@@ -410,6 +456,7 @@ INVENTORY_PRODUCTS = [
         "name": "Caffè Espresso Macinato 250g",
         "description": "Caffè espresso macinato moka 250g",
         "price": 4.50,
+        "quantity": 50,
         "category": "Caffè",
         "image_url": None
     },
@@ -418,6 +465,7 @@ INVENTORY_PRODUCTS = [
         "name": "Caffè in Grani 1kg",
         "description": "Caffè in grani per macchina espresso 1kg",
         "price": 15.00,
+        "quantity": 50,
         "category": "Caffè",
         "image_url": None
     }

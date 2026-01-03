@@ -247,6 +247,15 @@ def create_app(config_name='default'):
             'error': 'not_found'
         }), 404
     
+    @app.errorhandler(405)
+    def method_not_allowed(error):
+        return jsonify({
+            'success': False,
+            'message': 'Method not allowed for this endpoint',
+            'error': 'method_not_allowed',
+            'allowed_methods': error.description if hasattr(error, 'description') else None
+        }), 405
+    
     @app.errorhandler(500)
     def internal_error(error):
         return jsonify({

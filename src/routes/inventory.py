@@ -23,6 +23,7 @@ class ProductSchema(Schema):
     name = fields.Str(required=True, validate=lambda x: 1 <= len(x) <= 100)
     description = fields.Str(allow_none=True)
     price = fields.Float(required=True, validate=lambda x: x >= 0)
+    quantity = fields.Int(required=True, validate=lambda x: x >= 0)
     category = fields.Str(allow_none=True, validate=lambda x: len(x) <= 50)
     image_url = fields.Str(allow_none=True, validate=lambda x: len(x) <= 255)
     created_at = fields.DateTime(dump_only=True)
@@ -113,6 +114,7 @@ def add_product():
             name=data['name'],
             description=data.get('description'),
             price=data['price'],
+            quantity=data['quantity'],
             category=data.get('category'),
             image_url=data.get('image_url')
         )

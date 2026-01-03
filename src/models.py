@@ -192,6 +192,7 @@ class Product(db.Model):
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.Text)
     price = db.Column(db.Numeric(10, 2), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False, default=0)
     category = db.Column(db.String(50))
     image_url = db.Column(db.String(255))
     created_at = db.Column(db.DateTime, default=italy_now)
@@ -204,6 +205,7 @@ class Product(db.Model):
             'name': self.name,
             'description': self.description,
             'price': float(self.price),
+            'quantity': self.quantity,
             'category': self.category,
             'image_url': self.image_url,
             'created_at': self.created_at.isoformat() if self.created_at else None,

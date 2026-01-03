@@ -3,6 +3,14 @@ Swagger/OpenAPI documentation for Inventory endpoints
 """
 
 get_all_products_spec = {
+                            "name": {"type": "string", "example": "Coca Cola 330ml"},
+                            "description": {"type": "string"},
+                            "price": {"type": "number", "example": 2.50},
+                            "quantity": {"type": "integer", "example": 100},
+                            "category": {"type": "string", "example": "beverages"},
+                            "image_url": {"type": "string"},
+                            "created_at": {"type": "string", "format": "date-time"},
+                            "updated_at": {"type": "string", "format": "date-time"},
     "tags": ["Inventory"],
     "summary": "Get all products",
     "description": "Retrieve all products in inventory",
@@ -24,6 +32,7 @@ get_all_products_spec = {
                                 "name": {"type": "string", "example": "Coca Cola 330ml"},
                                 "description": {"type": "string"},
                                 "price": {"type": "number", "example": 2.50},
+                                "quantity": {"type": "integer", "example": 100},
                                 "category": {"type": "string", "example": "beverages"},
                                 "image_url": {"type": "string"},
                                 "created_at": {"type": "string", "format": "date-time"},
@@ -70,6 +79,7 @@ get_product_spec = {
                             "name": {"type": "string", "example": "Coca Cola 330ml"},
                             "description": {"type": "string"},
                             "price": {"type": "number", "example": 2.50},
+                            "quantity": {"type": "integer", "example": 100},
                             "category": {"type": "string", "example": "beverages"},
                             "image_url": {"type": "string"},
                             "created_at": {"type": "string", "format": "date-time"},
