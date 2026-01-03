@@ -196,6 +196,7 @@ def create_app(config_name='default'):
                     'GET /api/inventory/ean/{ean}': 'Search products by EAN',
                     'POST /api/inventory/': 'Create new product',
                     'PUT /api/inventory/{id}': 'Update product',
+                    'PATCH /api/inventory/{id}/quantity': 'Modify product quantity',
                     'DELETE /api/inventory/{id}': 'Delete product'
                 }
             }

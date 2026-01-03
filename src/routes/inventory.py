@@ -11,6 +11,7 @@ from docs.inventory_docs import (
     get_all_products_spec,
     get_product_ean_spec,
     get_product_spec,
+    modify_quantity_spec,
     create_product_spec,
     update_product_spec,
     delete_product_spec
@@ -156,7 +157,7 @@ def add_product():
             'error': str(e)
         }), 500
 
-@inventory_bp.route('/<product_id>', methods=['PUT'])
+@inventory_bp.route('/<product_id>', methods=['PATCH'])
 @swag_from(update_product_spec)
 @permission_required('product.edit')
 def update_product(product_id):
@@ -202,6 +203,8 @@ def update_product(product_id):
         for key, value in data.items():
             setattr(product, key, value)
         
+        product.updated_at = italy_now()
+        
         db.session.commit()
         
         return jsonify({
@@ -214,6 +217,91 @@ def update_product(product_id):
         return jsonify({
             'success': False,
             'message': 'Error updating product',
+            'error': str(e)
+        }), 500
+
+@inventory_bp.route('/<product_id>/quantity', methods=['PATCH'])
+@swag_from(modify_quantity_spec)
+@permission_required('product.edit')
+def modify_quantity(product_id):
+    """Modify product quantity with operations (add, remove, set)"""
+    try:
+        # Validate UUID
+        try:
+            uuid.UUID(product_id)
+        except ValueError:
+            return jsonify({
+                'success': False,
+                'message': 'Invalid product ID format'
+            }), 400
+        
+        product = Product.query.get(product_id)
+        if not product:
+            return jsonify({
+                'success': False,
+                'message': 'Product not found'
+            }), 404
+        
+        data = request.get_json()
+        operation = data.get('operation')
+        amount = data.get('amount')
+        
+        if operation not in ['add', 'remove', 'set']:
+            return jsonify({
+                'success': False,
+                'message': 'Operation must be "add", "remove", or "set"'
+            }), 400
+        
+        if amount is None or not isinstance(amount, int):
+            return jsonify({
+                'success': False,
+                'message': 'Amount must be an integer'
+            }), 400
+        
+        old_quantity = product.quantity
+        
+        if operation == 'add':
+            if amount <= 0:
+                return jsonify({
+                    'success': False,
+                    'message': 'Amount must be positive for add operation'
+                }), 400
+            product.quantity += amount
+            
+        elif operation == 'remove':
+            if amount <= 0:
+                return jsonify({
+                    'success': False,
+                    'message': 'Amount must be positive for remove operation'
+                }), 400
+            if product.quantity < amount:
+                return jsonify({
+                    'success': False,
+                    'message': f'Insufficient quantity. Available: {product.quantity}, Requested: {amount}'
+                }), 400
+            product.quantity -= amount
+            
+        elif operation == 'set':
+            if amount < 0:
+                return jsonify({
+                    'success': False,
+                    'message': 'Amount cannot be negative for set operation'
+                }), 400
+            product.quantity = amount
+        
+        product.updated_at = italy_now()
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'message': f'Quantity updated: {old_quantity} → {product.quantity}',
+            'data': product_schema.dump(product)
+        }), 200
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': 'Error modifying quantity',
             'error': str(e)
         }), 500
 

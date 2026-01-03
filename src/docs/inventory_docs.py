@@ -190,14 +190,13 @@ create_product_spec = {
 update_product_spec = {
     "tags": ["Inventory"],
     "summary": "Update product",
-    "description": "Update an existing product in inventory",
+    "description": "Update one or more fields of an existing product",
     "security": [{"Bearer": []}],
     "parameters": [
         {
             "name": "product_id",
             "in": "path",
             "type": "string",
-            "format": "uuid",
             "required": True,
             "description": "Product UUID"
         },
@@ -208,17 +207,15 @@ update_product_spec = {
             "schema": {
                 "type": "object",
                 "properties": {
-                    "ean": {"type": "string", "minLength": 8, "maxLength": 13},
-                    "name": {"type": "string"},
+                    "ean": {"type": "string", "example": "1234567890123"},
+                    "name": {"type": "string", "example": "Coca Cola 330ml"},
                     "description": {"type": "string"},
-                    "price": {"type": "number"},
-                    "category": {"type": "string"},
+                    "price": {"type": "number", "example": 2.50},
+                    "quantity": {"type": "integer", "example": 150},
+                    "category": {"type": "string", "example": "beverages"},
                     "image_url": {"type": "string"}
                 },
-                "example": {
-                    "price": 2.75,
-                    "description": "Updated description"
-                }
+                "description": "Only include fields you want to update. Example for quantity only: {\"quantity\": 150}"
             }
         }
     ],
@@ -229,12 +226,132 @@ update_product_spec = {
                 "type": "object",
                 "properties": {
                     "success": {"type": "boolean", "example": True},
-                    "message": {"type": "string"},
-                    "data": {"type": "object"}
+                    "message": {"type": "string", "example": "Product updated successfully"},
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "id": {"type": "string", "format": "uuid"},
+                            "ean": {"type": "string"},
+                            "name": {"type": "string"},
+                            "description": {"type": "string"},
+                            "price": {"type": "number"},
+                            "quantity": {"type": "integer"},
+                            "category": {"type": "string"},
+                            "image_url": {"type": "string"},
+                            "created_at": {"type": "string", "format": "date-time"},
+                            "updated_at": {"type": "string", "format": "date-time"}
+                        }
+                    }
                 }
             }
         },
-        400: {"description": "Validation or UUID error"},
+        400: {"description": "Validation error"},
+        401: {"description": "Unauthorized"},
+        403: {"description": "Insufficient permissions"},
+        404: {"description": "Product not found"},
+        409: {"description": "EAN already exists"}
+    }
+}
+
+modify_quantity_spec = {
+    "tags": ["Inventory"],
+    "summary": "Modify product quantity",
+    "description": "Perform quantity operations: add (increment), remove (decrement), or set (absolute value). Useful for stock management, sales tracking, and inventory adjustments.",
+    "security": [{"Bearer": []}],
+    "parameters": [
+        {
+            "name": "product_id",
+            "in": "path",
+            "type": "string",
+            "required": True,
+            "description": "Product UUID"
+        },
+        {
+            "name": "body",
+            "in": "body",
+            "required": True,
+            "schema": {
+                "type": "object",
+                "required": ["operation", "amount"],
+                "properties": {
+                    "operation": {
+                        "type": "string",
+                        "enum": ["add", "remove", "set"],
+                        "description": "Operation type: 'add' for stock replenishment, 'remove' for consumption/sales, 'set' for inventory count",
+                        "example": "add"
+                    },
+                    "amount": {
+                        "type": "integer",
+                        "description": "Amount to add, remove, or set. Must be positive for add/remove, non-negative for set",
+                        "example": 50
+                    }
+                }
+            }
+        }
+    ],
+    "responses": {
+        200: {
+            "description": "Quantity modified successfully",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "success": {"type": "boolean", "example": True},
+                    "message": {"type": "string", "example": "Quantity updated: 100 → 150"},
+                    "data": {
+                        "type": "object",
+                        "properties": {
+                            "id": {"type": "string", "format": "uuid"},
+                            "ean": {"type": "string", "example": "5449000000996"},
+                            "name": {"type": "string", "example": "Coca Cola 330ml"},
+                            "description": {"type": "string"},
+                            "price": {"type": "number", "example": 1.50},
+                            "quantity": {"type": "integer", "example": 150},
+                            "category": {"type": "string", "example": "beverages"},
+                            "image_url": {"type": "string"},
+                            "created_at": {"type": "string", "format": "date-time"},
+                            "updated_at": {"type": "string", "format": "date-time"}
+                        }
+                    }
+                }
+            },
+            "examples": {
+                "application/json": {
+                    "add_operation": {
+                        "description": "Add 50 units (stock replenishment)",
+                        "value": {
+                            "operation": "add",
+                            "amount": 50
+                        }
+                    },
+                    "remove_operation": {
+                        "description": "Remove 10 units (consumption/sale)",
+                        "value": {
+                            "operation": "remove",
+                            "amount": 10
+                        }
+                    },
+                    "set_operation": {
+                        "description": "Set to 100 units (physical inventory count)",
+                        "value": {
+                            "operation": "set",
+                            "amount": 100
+                        }
+                    }
+                }
+            }
+        },
+        400: {
+            "description": "Validation error or insufficient quantity",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "success": {"type": "boolean", "example": False},
+                    "message": {"type": "string", "example": "Insufficient quantity. Available: 5, Requested: 10"}
+                }
+            }
+        },
+        401: {"description": "Unauthorized - Missing or invalid token"},
+        403: {"description": "Insufficient permissions - Requires product.edit permission"},
         404: {"description": "Product not found"}
     }
 }

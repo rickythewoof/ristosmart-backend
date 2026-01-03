@@ -68,7 +68,7 @@ def test_health_check():
             log_success(f"Health check passed - Status: {response.status_code}")
             return True
         else:
-            log_error(f"Health check failed - Status: {response.status_code}")
+            log_error(f"Health check failed - Status: {response.status_code}, Response: {response.text}")
             return False
     except Exception as e:
         log_error(f"Health check failed - Error: {str(e)}")
@@ -90,7 +90,7 @@ def login_user(username, password):
                 log_success(f"Login successful for user: {username}")
                 return token
         
-        log_error(f"Login failed for user: {username} - Status: {response.status_code}")
+        log_error(f"Login failed for user: {username} - Status: {response.status_code}, Response: {response.text}")
         return None
     except Exception as e:
         log_error(f"Login exception for user: {username} - Error: {str(e)}")
@@ -120,7 +120,7 @@ def test_authentication():
             user_data = response.json()
             log_success(f"GET /api/users/me - User: {user_data.get('user', {}).get('username')}")
         else:
-            log_error(f"GET /api/users/me failed - Status: {response.status_code}")
+            log_error(f"GET /api/users/me failed - Status: {response.status_code}, Response: {response.text}")
     except Exception as e:
         log_error(f"GET /api/users/me exception - Error: {str(e)}")
 
@@ -132,7 +132,7 @@ def test_authentication():
         if response.status_code == 401:
             log_success("Unauthorized access correctly blocked - Status: 401")
         else:
-            log_error(f"Unauthorized access not blocked - Status: {response.status_code}")
+            log_error(f"Unauthorized access not blocked - Status: {response.status_code}, Response: {response.text}")
     except Exception as e:
         log_error(f"Unauthorized access test exception - Error: {str(e)}")
     
@@ -147,7 +147,7 @@ def test_authentication():
         if response.status_code == 401 or response.status_code == 422:
             log_success(f"Invalid token correctly rejected - Status: {response.status_code}")
         else:
-            log_error(f"Invalid token not rejected - Status: {response.status_code}")
+            log_error(f"Invalid token not rejected - Status: {response.status_code}, Response: {response.text}")
     except Exception as e:
         log_error(f"Invalid token test exception - Error: {str(e)}")
     
@@ -168,7 +168,7 @@ def test_menu_items(token):
             data = response.json()
             log_success(f"GET /api/menu/ - Retrieved {len(data.get('data', []))} items")
         else:
-            log_error(f"GET /api/menu/ failed - Status: {response.status_code}")
+            log_error(f"GET /api/menu/ failed - Status: {response.status_code}, Response: {response.text}")
     except Exception as e:
         log_error(f"GET /api/menu/ exception - Error: {str(e)}")
     
@@ -181,7 +181,7 @@ def test_menu_items(token):
             data = response.json()
             log_success(f"GET /api/menu/available - Retrieved {len(data.get('data', []))} items")
         else:
-            log_error(f"GET /api/menu/available failed - Status: {response.status_code}")
+            log_error(f"GET /api/menu/available failed - Status: {response.status_code}, Response: {response.text}")
     except Exception as e:
         log_error(f"GET /api/menu/available exception - Error: {str(e)}")
     
@@ -212,7 +212,7 @@ def test_menu_items(token):
             created_item_id = data.get('data', {}).get('id')
             log_success(f"POST /api/menu/ - Created item ID: {created_item_id}")
         else:
-            log_error(f"POST /api/menu/ failed - Status: {response.status_code}")
+            log_error(f"POST /api/menu/ failed - Status: {response.status_code}, Response: {response.text}")
     except Exception as e:
         log_error(f"POST /api/menu/ exception - Error: {str(e)}")
     
@@ -228,7 +228,7 @@ def test_menu_items(token):
         if response.status_code == 401:
             log_success("POST /api/menu/ correctly blocked without auth - Status: 401")
         else:
-            log_error(f"POST /api/menu/ not blocked without auth - Status: {response.status_code}")
+            log_error(f"POST /api/menu/ not blocked without auth - Status: {response.status_code}, Response: {response.text}")
     except Exception as e:
         log_error(f"POST /api/menu/ no-auth test exception - Error: {str(e)}")
     
@@ -242,7 +242,7 @@ def test_menu_items(token):
                 data = response.json()
                 log_success(f"GET /api/menu/{created_item_id} - Name: {data.get('data', {}).get('name')}")
             else:
-                log_error(f"GET /api/menu/{created_item_id} failed - Status: {response.status_code}")
+                log_error(f"GET /api/menu/{created_item_id} failed - Status: {response.status_code}, Response: {response.text}")
         except Exception as e:
             log_error(f"GET /api/menu/{created_item_id} exception - Error: {str(e)}")
         
@@ -263,7 +263,7 @@ def test_menu_items(token):
             if response.status_code == 200:
                 log_success(f"PUT /api/menu/{created_item_id} - Updated successfully")
             else:
-                log_error(f"PUT /api/menu/{created_item_id} failed - Status: {response.status_code}")
+                log_error(f"PUT /api/menu/{created_item_id} failed - Status: {response.status_code}, Response: {response.text}")
         except Exception as e:
             log_error(f"PUT /api/menu/{created_item_id} exception - Error: {str(e)}")
         
@@ -279,7 +279,7 @@ def test_menu_items(token):
             if response.status_code == 401:
                 log_success(f"PUT /api/menu/{created_item_id} correctly blocked without auth")
             else:
-                log_error(f"PUT /api/menu/{created_item_id} not blocked without auth - Status: {response.status_code}")
+                log_error(f"PUT /api/menu/{created_item_id} not blocked without auth - Status: {response.status_code}, Response: {response.text}")
         except Exception as e:
             log_error(f"PUT /api/menu/{created_item_id} no-auth test exception - Error: {str(e)}")
         
@@ -294,7 +294,7 @@ def test_menu_items(token):
             if response.status_code == 200:
                 log_success(f"DELETE /api/menu/{created_item_id} - Deleted successfully")
             else:
-                log_error(f"DELETE /api/menu/{created_item_id} failed - Status: {response.status_code}")
+                log_error(f"DELETE /api/menu/{created_item_id} failed - Status: {response.status_code}, Response: {response.text}")
         except Exception as e:
             log_error(f"DELETE /api/menu/{created_item_id} exception - Error: {str(e)}")
     
@@ -327,7 +327,7 @@ def test_orders(token):
             menu_item_id = response.json().get('data', {}).get('id')
             log_success(f"Test menu item created - ID: {menu_item_id}")
         else:
-            log_error(f"Failed to create test menu item - Status: {response.status_code}")
+            log_error(f"Failed to create test menu item - Status: {response.status_code}, Response: {response.text}")
     except Exception as e:
         log_error(f"Exception creating test menu item - Error: {str(e)}")
     
@@ -347,7 +347,7 @@ def test_orders(token):
             data = response.json()
             log_success(f"GET /api/orders/ - Retrieved {len(data.get('data', []))} orders")
         else:
-            log_error(f"GET /api/orders/ failed - Status: {response.status_code}")
+            log_error(f"GET /api/orders/ failed - Status: {response.status_code}, Response: {response.text}")
     except Exception as e:
         log_error(f"GET /api/orders/ exception - Error: {str(e)}")
     
@@ -359,7 +359,7 @@ def test_orders(token):
         if response.status_code == 401:
             log_success("GET /api/orders/ correctly blocked without auth")
         else:
-            log_error(f"GET /api/orders/ not blocked without auth - Status: {response.status_code}")
+            log_error(f"GET /api/orders/ not blocked without auth - Status: {response.status_code}, Response: {response.text}")
     except Exception as e:
         log_error(f"GET /api/orders/ no-auth test exception - Error: {str(e)}")
     
@@ -392,7 +392,7 @@ def test_orders(token):
             order_number = data.get('data', {}).get('order_number')
             log_success(f"POST /api/orders/ - Created order {order_number}, ID: {created_order_id}")
         else:
-            log_error(f"POST /api/orders/ failed - Status: {response.status_code}")
+            log_error(f"POST /api/orders/ failed - Status: {response.status_code}, Response: {response.text}")
     except Exception as e:
         log_error(f"POST /api/orders/ exception - Error: {str(e)}")
     
@@ -408,7 +408,7 @@ def test_orders(token):
         if response.status_code == 401:
             log_success("POST /api/orders/ correctly blocked without auth")
         else:
-            log_error(f"POST /api/orders/ not blocked without auth - Status: {response.status_code}")
+            log_error(f"POST /api/orders/ not blocked without auth - Status: {response.status_code}, Response: {response.text}")
     except Exception as e:
         log_error(f"POST /api/orders/ no-auth test exception - Error: {str(e)}")
     
@@ -425,7 +425,7 @@ def test_orders(token):
                 data = response.json()
                 log_success(f"GET /api/orders/{created_order_id} - Status: {data.get('data', {}).get('status')}")
             else:
-                log_error(f"GET /api/orders/{created_order_id} failed - Status: {response.status_code}")
+                log_error(f"GET /api/orders/{created_order_id} failed - Status: {response.status_code}, Response: {response.text}")
         except Exception as e:
             log_error(f"GET /api/orders/{created_order_id} exception - Error: {str(e)}")
         
@@ -435,13 +435,13 @@ def test_orders(token):
             response = requests.put(
                 f"{BASE_URL}/api/orders/{created_order_id}/status",
                 headers={**HEADERS, "Authorization": f"Bearer {token}"},
-                json={"status": "confirmed"}
+                json={"status": "delivered"}
             )
             
             if response.status_code == 200:
-                log_success(f"PUT /api/orders/{created_order_id}/status - Updated to confirmed")
+                log_success(f"PUT /api/orders/{created_order_id}/status - Updated to delivered")
             else:
-                log_error(f"PUT /api/orders/{created_order_id}/status failed - Status: {response.status_code}")
+                log_error(f"PUT /api/orders/{created_order_id}/status failed - Status: {response.status_code}, response: {response.text}")
         except Exception as e:
             log_error(f"PUT /api/orders/{created_order_id}/status exception - Error: {str(e)}")
         
@@ -457,7 +457,7 @@ def test_orders(token):
             if response.status_code == 401:
                 log_success(f"PUT /api/orders/{created_order_id}/status correctly blocked without auth")
             else:
-                log_error(f"PUT /api/orders/{created_order_id}/status not blocked - Status: {response.status_code}")
+                log_error(f"PUT /api/orders/{created_order_id}/status not blocked - Status: {response.status_code}, Response: {response.text}")
         except Exception as e:
             log_error(f"PUT /api/orders/{created_order_id}/status no-auth test exception - Error: {str(e)}")
         
@@ -478,7 +478,7 @@ def test_orders(token):
                 else:
                     log_error("No order items found")
             else:
-                log_error(f"Failed to retrieve order items - Status: {response.status_code}")
+                log_error(f"Failed to retrieve order items - Status: {response.status_code}, Response: {response.text}")
         except Exception as e:
             log_error(f"GET /api/orders/{created_order_id} exception - Error: {str(e)}")
 
@@ -494,7 +494,7 @@ def test_orders(token):
             if response.status_code == 200:
                 log_success(f"PUT /api/orders/{created_order_id}/items/{created_order_item_id}/status - Updated to ready")
             else:
-                log_error(f"PUT /api/orders/{created_order_id}/items/{created_order_item_id}/status failed - Status: {response.status_code}")
+                log_error(f"PUT /api/orders/{created_order_id}/items/{created_order_item_id}/status failed - Status: {response.status_code}, Response: {response.text}")
         except Exception as e:
             log_error(f"PUT /api/orders/{created_order_id}/items/{created_order_item_id}/status exception - Error: {str(e)}")
     
@@ -509,7 +509,7 @@ def test_orders(token):
             if response.status_code == 200:
                 log_success(f"DELETE /api/menu/{menu_item_id} - Deleted successfully")
             else:
-                log_error(f"DELETE /api/menu/{menu_item_id} failed - Status: {response.status_code}")
+                log_error(f"DELETE /api/menu/{menu_item_id} failed - Status: {response.status_code}, Response: {response.text}")
         except Exception as e:
             log_error(f"DELETE /api/menu/{menu_item_id} exception - Error: {str(e)}")
 
@@ -537,7 +537,7 @@ def test_user_management(token):
             data = response.json()
             log_success(f"GET /api/users - Retrieved {len(data.get('data', []))} users")
         else:
-            log_error(f"GET /api/users failed - Status: {response.status_code}")
+            log_error(f"GET /api/users failed - Status: {response.status_code}, Response: {response.text}")
     except Exception as e:
         log_error(f"GET /api/users exception - Error: {str(e)}")
     
@@ -549,7 +549,7 @@ def test_user_management(token):
         if response.status_code == 401:
             log_success("GET /api/users correctly blocked without auth")
         else:
-            log_error(f"GET /api/users not blocked without auth - Status: {response.status_code}")
+            log_error(f"GET /api/users not blocked without auth - Status: {response.status_code}, Response: {response.text}")
     except Exception as e:
         log_error(f"GET /api/users no-auth test exception - Error: {str(e)}")
     
@@ -575,7 +575,7 @@ def test_user_management(token):
             created_user_id = data.get('user', {}).get('id')
             log_success(f"POST /api/auth/register - Created user: {user_data['username']}")
         else:
-            log_error(f"POST /api/auth/register failed - Status: {response.status_code}")
+            log_error(f"POST /api/auth/register failed - Status: {response.status_code}, Response: {response.text}")
     except Exception as e:
         log_error(f"POST /api/auth/register exception - Error: {str(e)}")
     
@@ -591,7 +591,7 @@ def test_user_management(token):
         if response.status_code == 401:
             log_success("POST /api/auth/register correctly blocked without auth")
         else:
-            log_error(f"POST /api/auth/register not blocked without auth - Status: {response.status_code}")
+            log_error(f"POST /api/auth/register not blocked without auth - Status: {response.status_code}, Response: {response.text}")
     except Exception as e:
         log_error(f"POST /api/auth/register no-auth test exception - Error: {str(e)}")
     
@@ -618,7 +618,7 @@ def test_user_management(token):
                 data = response.json()
                 log_success(f"GET /api/users/me - Retrieved user: {data.get('data', {}).get('username')}")
             else:
-                log_error(f"GET /api/users/me failed - Status: {response.status_code}")
+                log_error(f"GET /api/users/me failed - Status: {response.status_code}, Response: {response.text}")
         except Exception as e:
             log_error(f"GET /api/users/me exception - Error: {str(e)}")
     
@@ -635,7 +635,7 @@ def test_user_management(token):
                 data = response.json()
                 log_success(f"GET /api/users/{created_user_id} - User: {data.get('data', {}).get('username')}")
             else:
-                log_error(f"GET /api/users/{created_user_id} failed - Status: {response.status_code}")
+                log_error(f"GET /api/users/{created_user_id} failed - Status: {response.status_code}, Response: {response.text}")
         except Exception as e:
             log_error(f"GET /api/users/{created_user_id} exception - Error: {str(e)}")
     
@@ -652,7 +652,7 @@ def test_user_management(token):
             if response.status_code == 200:
                 log_success(f"PATCH /api/users/{created_user_id} - Updated successfully")
             else:
-                log_error(f"PATCH /api/users/{created_user_id} failed - Status: {response.status_code}")
+                log_error(f"PATCH /api/users/{created_user_id} failed - Status: {response.status_code}, Response: {response.text}")
         except Exception as e:
             log_error(f"PATCH /api/users/{created_user_id} exception - Error: {str(e)}")
     
@@ -681,7 +681,7 @@ def test_checkins(user_id, user_token):
             data = response.json()
             log_success(f"GET /api/users/{user_id}/checkins - Retrieved {len(data.get('data', []))} check-ins")
         else:
-            log_error(f"GET /api/users/{user_id}/checkins failed - Status: {response.status_code}")
+            log_error(f"GET /api/users/{user_id}/checkins failed - Status: {response.status_code}, Response: {response.text}")
     except Exception as e:
         log_error(f"GET /api/users/{user_id}/checkins exception - Error: {str(e)}")
     
@@ -693,7 +693,7 @@ def test_checkins(user_id, user_token):
         if response.status_code == 401:
             log_success("GET /api/users/{user_id}/checkins correctly blocked without auth")
         else:
-            log_error(f"GET /api/users/{user_id}/checkins not blocked - Status: {response.status_code}")
+            log_error(f"GET /api/users/{user_id}/checkins not blocked - Status: {response.status_code}, Response: {response.text}")
     except Exception as e:
         log_error(f"GET /api/users/{user_id}/checkins no-auth test exception - Error: {str(e)}")
     
@@ -710,7 +710,7 @@ def test_checkins(user_id, user_token):
             checkin_id = data.get('data', {}).get('id')
             log_success(f"POST /api/users/{user_id}/checkins - Check-in created: {checkin_id}")
         else:
-            log_error(f"POST /api/users/{user_id}/checkins failed - Status: {response.status_code}")
+            log_error(f"POST /api/users/{user_id}/checkins failed - Status: {response.status_code}, Response: {response.text}")
     except Exception as e:
         log_error(f"POST /api/users/{user_id}/checkins exception - Error: {str(e)}")
     
@@ -725,7 +725,7 @@ def test_checkins(user_id, user_token):
         if response.status_code == 400:
             log_success("POST /api/users/{user_id}/checkins correctly blocked - already checked in")
         else:
-            log_error(f"POST /api/users/{user_id}/checkins not blocked - Status: {response.status_code}")
+            log_error(f"POST /api/users/{user_id}/checkins not blocked - Status: {response.status_code}, Response: {response.text}")
     except Exception as e:
         log_error(f"POST /api/users/{user_id}/checkins second attempt exception - Error: {str(e)}")
     
@@ -741,7 +741,7 @@ def test_checkins(user_id, user_token):
             data = response.json()
             log_success(f"GET /api/users/{user_id}/checkins/current - Active check-in found")
         else:
-            log_error(f"GET /api/users/{user_id}/checkins/current failed - Status: {response.status_code}")
+            log_error(f"GET /api/users/{user_id}/checkins/current failed - Status: {response.status_code}, Response: {response.text}")
     except Exception as e:
         log_error(f"GET /api/users/{user_id}/checkins/current exception - Error: {str(e)}")
     
@@ -757,7 +757,7 @@ def test_checkins(user_id, user_token):
             if response.status_code == 200:
                 log_success(f"GET /api/users/{user_id}/checkins/{checkin_id} - Retrieved check-in")
             else:
-                log_error(f"GET /api/users/{user_id}/checkins/{checkin_id} failed - Status: {response.status_code}")
+                log_error(f"GET /api/users/{user_id}/checkins/{checkin_id} failed - Status: {response.status_code}, Response: {response.text}")
         except Exception as e:
             log_error(f"GET /api/users/{user_id}/checkins/{checkin_id} exception - Error: {str(e)}")
     
@@ -774,7 +774,7 @@ def test_checkins(user_id, user_token):
             if response.status_code == 200:
                 log_success(f"PUT /api/users/{user_id}/checkins/{checkin_id} - Check-out successful")
             else:
-                log_error(f"PUT /api/users/{user_id}/checkins/{checkin_id} failed - Status: {response.status_code}")
+                log_error(f"PUT /api/users/{user_id}/checkins/{checkin_id} failed - Status: {response.status_code}, Response: {response.text}")
         except Exception as e:
             log_error(f"PUT /api/users/{user_id}/checkins/{checkin_id} exception - Error: {str(e)}")
     
@@ -791,7 +791,7 @@ def test_checkins(user_id, user_token):
             if response.status_code == 400:
                 log_success(f"PUT /api/users/{user_id}/checkins/{checkin_id} correctly blocked - already checked out")
             else:
-                log_error(f"PUT /api/users/{user_id}/checkins/{checkin_id} not blocked - Status: {response.status_code}")
+                log_error(f"PUT /api/users/{user_id}/checkins/{checkin_id} not blocked - Status: {response.status_code}, Response: {response.text}")
         except Exception as e:
             log_error(f"PUT /api/users/{user_id}/checkins/{checkin_id} second attempt exception - Error: {str(e)}")
     
@@ -806,7 +806,7 @@ def test_checkins(user_id, user_token):
         if response.status_code == 404:
             log_success(f"GET /api/users/{user_id}/checkins/current correctly returns 404")
         else:
-            log_error(f"GET /api/users/{user_id}/checkins/current should return 404 - Status: {response.status_code}")
+            log_error(f"GET /api/users/{user_id}/checkins/current should return 404 - Status: {response.status_code}, Response: {response.text}")
     except Exception as e:
         log_error(f"GET /api/users/{user_id}/checkins/current no-active test exception - Error: {str(e)}")
     
@@ -830,7 +830,7 @@ def test_inventory(token):
             data = response.json()
             log_success(f"GET /api/inventory/ - Retrieved {data.get('count', 0)} products")
         else:
-            log_error(f"GET /api/inventory/ failed - Status: {response.status_code}")
+            log_error(f"GET /api/inventory/ failed - Status: {response.status_code}, Response: {response.text}")
     except Exception as e:
         log_error(f"GET /api/inventory/ exception - Error: {str(e)}")
     
@@ -842,7 +842,7 @@ def test_inventory(token):
         if response.status_code == 401:
             log_success("GET /api/inventory/ correctly blocked without auth")
         else:
-            log_error(f"GET /api/inventory/ not blocked without auth - Status: {response.status_code}")
+            log_error(f"GET /api/inventory/ not blocked without auth - Status: {response.status_code}, Response: {response.text}")
     except Exception as e:
         log_error(f"GET /api/inventory/ no-auth test exception - Error: {str(e)}")
     
@@ -855,6 +855,7 @@ def test_inventory(token):
         "name": f"Test Product {datetime.now().strftime('%H%M%S')}",
         "description": "Automated test product",
         "price": 25.99,
+        "quantity": 100,
         "category": "beverages",
         "image_url": "https://example.com/product.jpg"
     }
@@ -892,7 +893,7 @@ def test_inventory(token):
         if response.status_code == 400:
             log_success("POST /api/inventory/ correctly rejected invalid data - Status: 400")
         else:
-            log_error(f"POST /api/inventory/ should reject invalid data - Status: {response.status_code}")
+            log_error(f"POST /api/inventory/ should reject invalid data - Status: {response.status_code}, Response: {response.text}")
     except Exception as e:
         log_error(f"POST /api/inventory/ invalid data test exception - Error: {str(e)}")
     
@@ -909,7 +910,7 @@ def test_inventory(token):
             if response.status_code == 409:
                 log_success("POST /api/inventory/ correctly rejected duplicate EAN - Status: 409")
             else:
-                log_error(f"POST /api/inventory/ should reject duplicate EAN - Status: {response.status_code}")
+                log_error(f"POST /api/inventory/ should reject duplicate EAN - Status: {response.status_code}, Response: {response.text}")
         except Exception as e:
             log_error(f"POST /api/inventory/ duplicate EAN test exception - Error: {str(e)}")
     
@@ -925,7 +926,7 @@ def test_inventory(token):
         if response.status_code == 401:
             log_success("POST /api/inventory/ correctly blocked without auth")
         else:
-            log_error(f"POST /api/inventory/ not blocked without auth - Status: {response.status_code}")
+            log_error(f"POST /api/inventory/ not blocked without auth - Status: {response.status_code}, Response: {response.text}")
     except Exception as e:
         log_error(f"POST /api/inventory/ no-auth test exception - Error: {str(e)}")
     
@@ -943,7 +944,7 @@ def test_inventory(token):
                 product_name = data.get('data', {}).get('name')
                 log_success(f"GET /api/inventory/{created_product_id} - Name: {product_name}")
             else:
-                log_error(f"GET /api/inventory/{created_product_id} failed - Status: {response.status_code}")
+                log_error(f"GET /api/inventory/{created_product_id} failed - Status: {response.status_code}, Response: {response.text}")
         except Exception as e:
             log_error(f"GET /api/inventory/{created_product_id} exception - Error: {str(e)}")
         
@@ -958,7 +959,7 @@ def test_inventory(token):
             if response.status_code == 400:
                 log_success("GET /api/inventory/invalid-uuid correctly rejected - Status: 400")
             else:
-                log_error(f"GET /api/inventory/invalid-uuid should return 400 - Status: {response.status_code}")
+                log_error(f"GET /api/inventory/invalid-uuid should return 400 - Status: {response.status_code}, Response: {response.text}")
         except Exception as e:
             log_error(f"GET /api/inventory/invalid-uuid exception - Error: {str(e)}")
         
@@ -973,12 +974,12 @@ def test_inventory(token):
             if response.status_code == 404:
                 log_success("GET /api/inventory/non-existent correctly returned 404")
             else:
-                log_error(f"GET /api/inventory/non-existent should return 404 - Status: {response.status_code}")
+                log_error(f"GET /api/inventory/non-existent should return 404 - Status: {response.status_code}, Response: {response.text}")
         except Exception as e:
             log_error(f"GET /api/inventory/non-existent exception - Error: {str(e)}")
         
         # Test PUT update product
-        log_info(f"Testing PUT /api/inventory/{created_product_id}...")
+        log_info(f"Testing PATCH /api/inventory/{created_product_id}...")
         update_data = {
             "price": 29.99,
             "description": "Updated test product description",
@@ -986,7 +987,7 @@ def test_inventory(token):
         }
         
         try:
-            response = requests.put(
+            response = requests.patch(
                 f"{BASE_URL}/api/inventory/{created_product_id}",
                 headers={**HEADERS, "Authorization": f"Bearer {token}"},
                 json=update_data
@@ -995,48 +996,48 @@ def test_inventory(token):
             if response.status_code == 200:
                 data = response.json()
                 updated_price = data.get('data', {}).get('price')
-                log_success(f"PUT /api/inventory/{created_product_id} - Updated price: €{updated_price}")
+                log_success(f"PATCH /api/inventory/{created_product_id} - Updated price: €{updated_price}")
             else:
-                log_error(f"PUT /api/inventory/{created_product_id} failed - Status: {response.status_code}")
+                log_error(f"PATCH /api/inventory/{created_product_id} failed - Status: {response.status_code}, Response: {response.text}")
         except Exception as e:
-            log_error(f"PUT /api/inventory/{created_product_id} exception - Error: {str(e)}")
-        
-        # Test PUT update product with invalid data
-        log_info(f"Testing PUT /api/inventory/{created_product_id} with invalid data...")
+            log_error(f"PATCH /api/inventory/{created_product_id} exception - Error: {str(e)}")
+
+        # Test PATCH update product with invalid data
+        log_info(f"Testing PATCH /api/inventory/{created_product_id} with invalid data...")
         invalid_update_data = {
             "price": -10.00  # Negative price should be rejected
         }
-        
+
         try:
-            response = requests.put(
+            response = requests.patch(
                 f"{BASE_URL}/api/inventory/{created_product_id}",
                 headers={**HEADERS, "Authorization": f"Bearer {token}"},
                 json=invalid_update_data
             )
             
             if response.status_code == 400:
-                log_success(f"PUT /api/inventory/{created_product_id} correctly rejected invalid price")
+                log_success(f"PATCH /api/inventory/{created_product_id} correctly rejected invalid price")
             else:
-                log_error(f"PUT /api/inventory/{created_product_id} should reject negative price - Status: {response.status_code}")
+                log_error(f"PATCH /api/inventory/{created_product_id} should reject negative price - Status: {response.status_code}, Response: {response.text}")
         except Exception as e:
-            log_error(f"PUT /api/inventory/{created_product_id} invalid data test exception - Error: {str(e)}")
-        
-        # Test PUT without authentication
-        log_info(f"Testing PUT /api/inventory/{created_product_id} without authentication...")
+            log_error(f"PATCH /api/inventory/{created_product_id} invalid data test exception - Error: {str(e)}")
+
+        # Test PATCH without authentication
+        log_info(f"Testing PATCH /api/inventory/{created_product_id} without authentication...")
         try:
-            response = requests.put(
+            response = requests.patch(
                 f"{BASE_URL}/api/inventory/{created_product_id}",
                 headers=HEADERS,
                 json=update_data
             )
             
             if response.status_code == 401:
-                log_success(f"PUT /api/inventory/{created_product_id} correctly blocked without auth")
+                log_success(f"PATCH /api/inventory/{created_product_id} correctly blocked without auth")
             else:
-                log_error(f"PUT /api/inventory/{created_product_id} not blocked without auth - Status: {response.status_code}")
+                log_error(f"PATCH /api/inventory/{created_product_id} not blocked without auth - Status: {response.status_code}, Response: {response.text}")
         except Exception as e:
-            log_error(f"PUT /api/inventory/{created_product_id} no-auth test exception - Error: {str(e)}")
-        
+            log_error(f"PATCH /api/inventory/{created_product_id} no-auth test exception - Error: {str(e)}")
+
         # Test DELETE product
         log_info(f"Testing DELETE /api/inventory/{created_product_id}...")
         try:
@@ -1048,7 +1049,7 @@ def test_inventory(token):
             if response.status_code == 200:
                 log_success(f"DELETE /api/inventory/{created_product_id} - Deleted successfully")
             else:
-                log_error(f"DELETE /api/inventory/{created_product_id} failed - Status: {response.status_code}")
+                log_error(f"DELETE /api/inventory/{created_product_id} failed - Status: {response.status_code}, Response: {response.text}")
         except Exception as e:
             log_error(f"DELETE /api/inventory/{created_product_id} exception - Error: {str(e)}")
         
@@ -1063,7 +1064,7 @@ def test_inventory(token):
             if response.status_code == 404:
                 log_success(f"DELETE /api/inventory/{created_product_id} correctly returned 404 - already deleted")
             else:
-                log_error(f"DELETE /api/inventory/{created_product_id} should return 404 - Status: {response.status_code}")
+                log_error(f"DELETE /api/inventory/{created_product_id} should return 404 - Status: {response.status_code}, Response: {response.text}")
         except Exception as e:
             log_error(f"DELETE /api/inventory/{created_product_id} second delete exception - Error: {str(e)}")
         
@@ -1078,9 +1079,224 @@ def test_inventory(token):
             if response.status_code == 401:
                 log_success("DELETE /api/inventory/ correctly blocked without auth")
             else:
-                log_error(f"DELETE /api/inventory/ not blocked without auth - Status: {response.status_code}")
+                log_error(f"DELETE /api/inventory/ not blocked without auth - Status: {response.status_code}, Response: {response.text}")
         except Exception as e:
             log_error(f"DELETE /api/inventory/ no-auth test exception - Error: {str(e)}")
+    
+    # Test quantity modification operations
+    log_section("TEST: Inventory Quantity Modifications")
+    
+    # Create a product specifically for quantity testing
+    log_info("Creating test product for quantity operations...")
+    quantity_test_product_id = None
+    timestamp = datetime.now().strftime('%S%f')[:5]
+    quantity_product_data = {
+        "ean": f"99999999{timestamp}",
+        "name": f"Quantity Test Product {datetime.now().strftime('%H%M%S')}",
+        "description": "Product for testing quantity operations",
+        "price": 10.00,
+        "quantity": 100,
+        "category": "test"
+    }
+    
+    try:
+        response = requests.post(
+            f"{BASE_URL}/api/inventory/",
+            headers={**HEADERS, "Authorization": f"Bearer {token}"},
+            json=quantity_product_data
+        )
+        
+        if response.status_code == 201:
+            data = response.json()
+            quantity_test_product_id = data.get('data', {}).get('id')
+            initial_quantity = data.get('data', {}).get('quantity')
+            log_success(f"Created quantity test product - ID: {quantity_test_product_id}, Initial quantity: {initial_quantity}")
+        else:
+            log_error(f"Failed to create quantity test product - Status: {response.status_code}, Response: {response.text}")
+    except Exception as e:
+        log_error(f"Exception creating quantity test product - Error: {str(e)}")
+    
+    if quantity_test_product_id:
+        # Test PATCH add quantity
+        log_info(f"Testing PATCH /api/inventory/{quantity_test_product_id}/quantity (add operation)...")
+        try:
+            response = requests.patch(
+                f"{BASE_URL}/api/inventory/{quantity_test_product_id}/quantity",
+                headers={**HEADERS, "Authorization": f"Bearer {token}"},
+                json={"operation": "add", "amount": 50}
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                new_quantity = data.get('data', {}).get('quantity')
+                log_success(f"PATCH add quantity - New quantity: {new_quantity} (expected: 150)")
+            else:
+                log_error(f"PATCH add quantity failed - Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            log_error(f"PATCH add quantity exception - Error: {str(e)}")
+        
+        # Test PATCH remove quantity
+        log_info(f"Testing PATCH /api/inventory/{quantity_test_product_id}/quantity (remove operation)...")
+        try:
+            response = requests.patch(
+                f"{BASE_URL}/api/inventory/{quantity_test_product_id}/quantity",
+                headers={**HEADERS, "Authorization": f"Bearer {token}"},
+                json={"operation": "remove", "amount": 30}
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                new_quantity = data.get('data', {}).get('quantity')
+                log_success(f"PATCH remove quantity - New quantity: {new_quantity} (expected: 120)")
+            else:
+                log_error(f"PATCH remove quantity failed - Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            log_error(f"PATCH remove quantity exception - Error: {str(e)}")
+        
+        # Test PATCH set quantity
+        log_info(f"Testing PATCH /api/inventory/{quantity_test_product_id}/quantity (set operation)...")
+        try:
+            response = requests.patch(
+                f"{BASE_URL}/api/inventory/{quantity_test_product_id}/quantity",
+                headers={**HEADERS, "Authorization": f"Bearer {token}"},
+                json={"operation": "set", "amount": 200}
+            )
+            
+            if response.status_code == 200:
+                data = response.json()
+                new_quantity = data.get('data', {}).get('quantity')
+                log_success(f"PATCH set quantity - New quantity: {new_quantity} (expected: 200)")
+            else:
+                log_error(f"PATCH set quantity failed - Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            log_error(f"PATCH set quantity exception - Error: {str(e)}")
+        
+        # Test PATCH add with negative amount (should fail)
+        log_info(f"Testing PATCH /api/inventory/{quantity_test_product_id}/quantity (add with negative amount)...")
+        try:
+            response = requests.patch(
+                f"{BASE_URL}/api/inventory/{quantity_test_product_id}/quantity",
+                headers={**HEADERS, "Authorization": f"Bearer {token}"},
+                json={"operation": "add", "amount": -10}
+            )
+            
+            if response.status_code == 400:
+                log_success("PATCH add with negative amount correctly rejected - Status: 400")
+            else:
+                log_error(f"PATCH add with negative amount should be rejected - Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            log_error(f"PATCH add negative amount test exception - Error: {str(e)}")
+        
+        # Test PATCH remove with amount exceeding available quantity (should fail)
+        log_info(f"Testing PATCH /api/inventory/{quantity_test_product_id}/quantity (remove exceeding quantity)...")
+        try:
+            response = requests.patch(
+                f"{BASE_URL}/api/inventory/{quantity_test_product_id}/quantity",
+                headers={**HEADERS, "Authorization": f"Bearer {token}"},
+                json={"operation": "remove", "amount": 9999}
+            )
+            
+            if response.status_code == 400:
+                log_success("PATCH remove exceeding quantity correctly rejected - Status: 400")
+            else:
+                log_error(f"PATCH remove exceeding quantity should be rejected - Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            log_error(f"PATCH remove exceeding quantity test exception - Error: {str(e)}")
+        
+        # Test PATCH set with negative amount (should fail)
+        log_info(f"Testing PATCH /api/inventory/{quantity_test_product_id}/quantity (set with negative amount)...")
+        try:
+            response = requests.patch(
+                f"{BASE_URL}/api/inventory/{quantity_test_product_id}/quantity",
+                headers={**HEADERS, "Authorization": f"Bearer {token}"},
+                json={"operation": "set", "amount": -50}
+            )
+            
+            if response.status_code == 400:
+                log_success("PATCH set with negative amount correctly rejected - Status: 400")
+            else:
+                log_error(f"PATCH set with negative amount should be rejected - Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            log_error(f"PATCH set negative amount test exception - Error: {str(e)}")
+        
+        # Test PATCH with invalid operation
+        log_info(f"Testing PATCH /api/inventory/{quantity_test_product_id}/quantity (invalid operation)...")
+        try:
+            response = requests.patch(
+                f"{BASE_URL}/api/inventory/{quantity_test_product_id}/quantity",
+                headers={**HEADERS, "Authorization": f"Bearer {token}"},
+                json={"operation": "multiply", "amount": 10}
+            )
+            
+            if response.status_code == 400:
+                log_success("PATCH with invalid operation correctly rejected - Status: 400")
+            else:
+                log_error(f"PATCH with invalid operation should be rejected - Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            log_error(f"PATCH invalid operation test exception - Error: {str(e)}")
+        
+        # Test PATCH with missing amount
+        log_info(f"Testing PATCH /api/inventory/{quantity_test_product_id}/quantity (missing amount)...")
+        try:
+            response = requests.patch(
+                f"{BASE_URL}/api/inventory/{quantity_test_product_id}/quantity",
+                headers={**HEADERS, "Authorization": f"Bearer {token}"},
+                json={"operation": "add"}
+            )
+            
+            if response.status_code == 400:
+                log_success("PATCH with missing amount correctly rejected - Status: 400")
+            else:
+                log_error(f"PATCH with missing amount should be rejected - Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            log_error(f"PATCH missing amount test exception - Error: {str(e)}")
+        
+        # Test PATCH with non-integer amount
+        log_info(f"Testing PATCH /api/inventory/{quantity_test_product_id}/quantity (non-integer amount)...")
+        try:
+            response = requests.patch(
+                f"{BASE_URL}/api/inventory/{quantity_test_product_id}/quantity",
+                headers={**HEADERS, "Authorization": f"Bearer {token}"},
+                json={"operation": "add", "amount": "not_a_number"}
+            )
+            
+            if response.status_code == 400:
+                log_success("PATCH with non-integer amount correctly rejected - Status: 400")
+            else:
+                log_error(f"PATCH with non-integer amount should be rejected - Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            log_error(f"PATCH non-integer amount test exception - Error: {str(e)}")
+        
+        # Test PATCH without authentication
+        log_info(f"Testing PATCH /api/inventory/{quantity_test_product_id}/quantity without authentication...")
+        try:
+            response = requests.patch(
+                f"{BASE_URL}/api/inventory/{quantity_test_product_id}/quantity",
+                headers=HEADERS,
+                json={"operation": "add", "amount": 10}
+            )
+            
+            if response.status_code == 401:
+                log_success("PATCH quantity modification correctly blocked without auth")
+            else:
+                log_error(f"PATCH quantity modification not blocked without auth - Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            log_error(f"PATCH quantity no-auth test exception - Error: {str(e)}")
+        
+        # Clean up - delete the quantity test product
+        log_info(f"Cleaning up - deleting quantity test product {quantity_test_product_id}...")
+        try:
+            response = requests.delete(
+                f"{BASE_URL}/api/inventory/{quantity_test_product_id}",
+                headers={**HEADERS, "Authorization": f"Bearer {token}"}
+            )
+            
+            if response.status_code == 200:
+                log_success(f"Quantity test product deleted successfully")
+            else:
+                log_error(f"Failed to delete quantity test product - Status: {response.status_code}, Response: {response.text}")
+        except Exception as e:
+            log_error(f"Exception deleting quantity test product - Error: {str(e)}")
     
     return created_product_id
 
