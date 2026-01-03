@@ -48,6 +48,52 @@ get_all_products_spec = {
     }
 }
 
+get_product_ean_spec = {
+    "tags": ["Inventory"],
+    "summary": "Search products by EAN",
+    "description": "Retrieve products matching the given EAN code",
+    "security": [{"Bearer": []}],
+    "parameters": [
+        {
+            "name": "ean",
+            "in": "path",
+            "type": "string",
+            "required": True,
+            "description": "EAN code to search for"
+        }
+    ],
+    "responses": {
+        200: {
+            "description": "Products retrieved successfully",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "success": {"type": "boolean", "example": True},
+                    "data": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "id": {"type": "string", "format": "uuid"},
+                                "ean": {"type": "string", "example": "1234567890123"},
+                                "name": {"type": "string", "example": "Coca Cola 330ml"},
+                                "description": {"type": "string"},
+                                "price": {"type": "number", "example": 2.50},
+                                "quantity": {"type": "integer", "example": 100},
+                                "category": {"type": "string", "example": "beverages"},
+                                "image_url": {"type": "string"},
+                                "created_at": {"type": "string", "format": "date-time"},
+                                "updated_at": {"type": "string", "format": "date-time"}
+                            }
+                        }
+                    },
+                    "count": {"type": "integer", "example": 5}
+                }
+            }
+        },
+        401: {"description": "Unauthorized"}
+    }
+}
 
 get_product_spec = {
     "tags": ["Inventory"],

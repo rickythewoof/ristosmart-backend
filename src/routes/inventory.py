@@ -9,6 +9,7 @@ from flasgger import swag_from
 
 from docs.inventory_docs import (
     get_all_products_spec,
+    get_product_ean_spec,
     get_product_spec,
     create_product_spec,
     update_product_spec,
@@ -39,6 +40,26 @@ def get_products():
     """Get all products"""
     try:
         products = Product.query.all()
+        return jsonify({
+            'success': True,
+            'data': products_schema.dump(products),
+            'count': len(products)
+        }), 200
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'message': 'Error fetching products',
+            'error': str(e)
+        }), 500
+
+
+@inventory_bp.route('/ean/<ean>', methods=['GET'])
+@jwt_required()
+@swag_from(get_product_ean_spec)
+def search_products(ean):
+    """Search products by EAN"""
+    try:
+        products = Product.query.filter_by(ean=ean).all()
         return jsonify({
             'success': True,
             'data': products_schema.dump(products),

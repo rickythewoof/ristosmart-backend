@@ -193,6 +193,7 @@ def create_app(config_name='default'):
                 'inventory': {
                     'GET /api/inventory/': 'Get all products',
                     'GET /api/inventory/{id}': 'Get product by ID',
+                    'GET /api/inventory/ean/{ean}': 'Search products by EAN',
                     'POST /api/inventory/': 'Create new product',
                     'PUT /api/inventory/{id}': 'Update product',
                     'DELETE /api/inventory/{id}': 'Delete product'
