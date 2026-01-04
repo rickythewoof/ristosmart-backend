@@ -659,6 +659,198 @@ def test_user_management(token):
     return created_user_id, new_user_token
 
 
+def test_password_management(manager_token, user_id=None, user_token=None):
+    """Test password management endpoints (RESTful)"""
+    log_section("TEST: Password Management")
+    
+    # If no user provided, create one for testing
+    test_user_id = user_id
+    test_user_token = user_token
+    test_username = None
+    original_password = "TestPass123!"
+    
+    if not test_user_id:
+        log_info("Creating test user for password tests...")
+        user_data = {
+            "username": f"pwdtest_{datetime.now().strftime('%H%M%S')}",
+            "email": f"pwdtest_{datetime.now().strftime('%H%M%S')}@test.com",
+            "password": original_password,
+            "full_name": "Password Test User",
+            "role": "waiter"
+        }
+        
+        try:
+            response = requests.post(
+                f"{BASE_URL}/api/auth/register",
+                headers={**HEADERS, "Authorization": f"Bearer {manager_token}"},
+                json=user_data
+            )
+            
+            if response.status_code == 201:
+                data = response.json()
+                test_user_id = data.get('user', {}).get('id')
+                test_username = user_data['username']
+                log_success(f"Created test user: {test_username}")
+                
+                # Login to get token
+                test_user_token = login_user(test_username, original_password)
+            else:
+                log_error(f"Failed to create test user - Status: {response.status_code}, Response: {response.text}")
+                return
+        except Exception as e:
+            log_error(f"Exception creating test user - Error: {str(e)}")
+            return
+    
+    if not test_user_id or not test_user_token:
+        log_error("Cannot test password management without valid user")
+        return
+    
+    # Test 1: User changes own password (PUT /api/users/me/password)
+    log_info("Testing PUT /api/users/me/password (change own password)...")
+    new_password = "NewPass456!"
+    try:
+        response = requests.put(
+            f"{BASE_URL}/api/users/me/password",
+            headers={**HEADERS, "Authorization": f"Bearer {test_user_token}"},
+            json={
+                "old_password": original_password,
+                "new_password": new_password
+            }
+        )
+        
+        if response.status_code == 200:
+            log_success("PUT /api/users/me/password - Password changed successfully")
+            
+            # Verify can login with new password
+            log_info("Verifying login with new password...")
+            if test_username:
+                new_token = login_user(test_username, new_password)
+                if new_token:
+                    test_user_token = new_token
+                    log_success("Login with new password successful")
+                else:
+                    log_error("Login with new password failed")
+        else:
+            log_error(f"PUT /api/users/me/password failed - Status: {response.status_code}, Response: {response.text}")
+    except Exception as e:
+        log_error(f"PUT /api/users/me/password exception - Error: {str(e)}")
+    
+    # Test 2: Try to change password without old_password (should fail)
+    log_info("Testing PUT /api/users/me/password without old_password (should fail)...")
+    try:
+        response = requests.put(
+            f"{BASE_URL}/api/users/me/password",
+            headers={**HEADERS, "Authorization": f"Bearer {test_user_token}"},
+            json={"new_password": "AnotherPass789!"}
+        )
+        
+        if response.status_code == 400:
+            log_success("PUT /api/users/me/password correctly requires old_password")
+        else:
+            log_error(f"PUT /api/users/me/password didn't require old_password - Status: {response.status_code} Response: {response.text}")
+    except Exception as e:
+        log_error(f"PUT /api/users/me/password no-old-pwd test exception - Error: {str(e)}")
+    
+    # Test 3: Try to change password with wrong old_password (should fail)
+    log_info("Testing PUT /api/users/me/password with wrong old_password (should fail)...")
+    try:
+        response = requests.put(
+            f"{BASE_URL}/api/users/me/password",
+            headers={**HEADERS, "Authorization": f"Bearer {test_user_token}"},
+            json={
+                "old_password": "WrongPassword123!",
+                "new_password": "AnotherPass789!"
+            }
+        )
+        
+        if response.status_code == 401:
+            log_success("PUT /api/users/me/password correctly rejects wrong old_password")
+        else:
+            log_error(f"PUT /api/users/me/password didn't reject wrong old_password - Status: {response.status_code} Response: {response.text}")
+    except Exception as e:
+        log_error(f"PUT /api/users/me/password wrong-pwd test exception - Error: {str(e)}")
+    
+    # Test 4: Try to change another user's password as non-manager (should fail)
+    log_info("Testing PUT /api/users/{id}/password as non-manager (should fail)...")
+    try:
+        response = requests.put(
+            f"{BASE_URL}/api/users/{test_user_id}/password",
+            headers={**HEADERS, "Authorization": f"Bearer {test_user_token}"},
+            json={"new_password": "HackerPass999!"}
+        )
+        
+        if response.status_code == 403:
+            log_success("PUT /api/users/{id}/password correctly blocked for non-manager")
+        else:
+            log_error(f"PUT /api/users/{id}/password not blocked for non-manager - Status: {response.status_code} Response: {response.text}")
+    except Exception as e:
+        log_error(f"PUT /api/users/{id}/password non-manager test exception - Error: {str(e)}")
+    
+    # Test 5: Manager resets user password (PUT /api/users/{id}/password)
+    log_info(f"Testing PUT /api/users/{test_user_id}/password (manager reset)...")
+    reset_password = "ResetPass789!"
+    try:
+        response = requests.put(
+            f"{BASE_URL}/api/users/{test_user_id}/password",
+            headers={**HEADERS, "Authorization": f"Bearer {manager_token}"},
+            json={"new_password": reset_password}
+        )
+        
+        if response.status_code == 200:
+            log_success(f"PUT /api/users/{test_user_id}/password - Manager reset successful")
+            
+            # Verify can login with reset password
+            if test_username:
+                log_info("Verifying login with reset password...")
+                reset_token = login_user(test_username, reset_password)
+                if reset_token:
+                    log_success("Login with reset password successful")
+                else:
+                    log_error("Login with reset password failed")
+        else:
+            log_error(f"PUT /api/users/{test_user_id}/password failed - Status: {response.status_code}, Response: {response.text}")
+    except Exception as e:
+        log_error(f"PUT /api/users/{test_user_id}/password exception - Error: {str(e)}")
+    
+    # Test 6: Try password change without authentication (should fail)
+    log_info("Testing PUT /api/users/me/password without authentication (should fail)...")
+    try:
+        response = requests.put(
+            f"{BASE_URL}/api/users/me/password",
+            headers=HEADERS,
+            json={
+                "old_password": reset_password,
+                "new_password": "NoAuthPass!"
+            }
+        )
+        
+        if response.status_code == 401:
+            log_success("PUT /api/users/me/password correctly blocked without auth")
+        else:
+            log_error(f"PUT /api/users/me/password not blocked without auth - Status: {response.status_code} Response: {response.text}")
+    except Exception as e:
+        log_error(f"PUT /api/users/me/password no-auth test exception - Error: {str(e)}")
+    
+    # Test 7: Try to reset password with short password (should fail)
+    log_info("Testing PUT /api/users/me/password with short password (should fail)...")
+    try:
+        response = requests.put(
+            f"{BASE_URL}/api/users/me/password",
+            headers={**HEADERS, "Authorization": f"Bearer {test_user_token if test_user_token else manager_token}"},
+            json={
+                "old_password": reset_password,
+                "new_password": "123"  # Too short
+            }
+        )
+        
+        if response.status_code == 400:
+            log_success("PUT /api/users/me/password correctly rejects short password")
+        else:
+            log_error(f"PUT /api/users/me/password didn't reject short password - Status: {response.status_code} Response: {response.text}")
+    except Exception as e:
+        log_error(f"PUT /api/users/me/password short-pwd test exception - Error: {str(e)}")
+
+
 def test_checkins(user_id, user_token):
     """Test check-in/check-out endpoints"""
     log_section("TEST: Check-ins")
@@ -1350,6 +1542,9 @@ def main():
         
     # Test user management
     created_user_id, new_user_token = test_user_management(token)
+    
+    # Test password management
+    test_password_management(token, created_user_id, new_user_token)
     
     # Test check-ins with the newly created user
     if created_user_id and new_user_token:

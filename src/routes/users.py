@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import get_jwt_identity
+from flask_jwt_extended import get_jwt_identity, get_jwt
 from flasgger import swag_from
 from docs.user_docs import (
     get_all_users_spec,
@@ -11,12 +11,12 @@ from docs.user_docs import (
     create_checkin_spec,
     get_current_checkin_spec,
     update_checkin_spec,
-    delete_checkin_spec
+    delete_checkin_spec,
+    update_password_spec
 )
 from models import db, CheckIn, User
 from datetime import datetime, timezone
 from auth import role_required, authentication_required
-
 
 user_bp = Blueprint('users', __name__)
 
@@ -431,5 +431,93 @@ def delete_checkin(user_id, checkin_id):
         return jsonify({
             'success': False,
             'message': 'Error deleting check-in',
+            'error': str(e)
+        }), 500
+
+@user_bp.route('/<user_id>/password', methods=['PUT'])
+@authentication_required()
+@swag_from(update_password_spec)
+def update_user_password(user_id):
+    """
+    Update user password (RESTful endpoint)
+    - PUT /api/users/me/password -> Change own password (requires old_password)
+    - PUT /api/users/{user_id}/password -> Manager resets user password (no old_password required)
+    """
+    try:
+        data = request.json
+        current_user_id = get_jwt_identity()
+        claims = get_jwt()
+        current_role = claims.get('role')
+        
+        new_password = data.get('new_password')
+        old_password = data.get('old_password')
+        
+        # Validate new password
+        if not new_password:
+            return jsonify({
+                'success': False,
+                'message': 'New password required'
+            }), 400
+        
+        if len(new_password) < 6:
+            return jsonify({
+                'success': False,
+                'message': 'New password must be at least 6 characters long'
+            }), 400
+        
+        # Resolve 'me' to actual user_id
+        target_user_id = current_user_id if user_id == 'me' else user_id
+        
+        # Get target user
+        user = User.query.get(target_user_id)
+        if not user:
+            return jsonify({
+                'success': False,
+                'message': 'User not found'
+            }), 404
+        
+        # Check permissions
+        is_own_password = (current_user_id == target_user_id)
+        is_manager = (current_role == 'manager')
+        
+        if not is_own_password and not is_manager:
+            return jsonify({
+                'success': False,
+                'message': 'Forbidden: Cannot change another user\'s password'
+            }), 403
+        
+        # If changing own password, require old password
+        if is_own_password:
+            if not old_password:
+                return jsonify({
+                    'success': False,
+                    'message': 'Old password required when changing own password'
+                }), 400
+            
+            # Verify old password
+            if not user.check_password(old_password):
+                return jsonify({
+                    'success': False,
+                    'message': 'Old password is incorrect'
+                }), 401
+        
+        # Update password
+        user.set_password(new_password)
+        db.session.commit()
+        
+        message = 'Password updated successfully'
+        if not is_own_password:
+            message = f'Password reset successfully for user {user.username}'
+        
+        return jsonify({
+            'success': True,
+            'message': message
+        }), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'message': 'Password update error',
             'error': str(e)
         }), 500

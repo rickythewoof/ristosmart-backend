@@ -163,7 +163,9 @@ def create_app(config_name='default'):
                     'GET /api/users/{id}': 'Get user by ID (manager only)',
                     'PUT /api/users/{id}': 'Update user (manager only)',
                     'PATCH /api/users/{id}': 'Partially update user (manager only)',
-                    'DELETE /api/users/{id}': 'Delete user (manager only)'
+                    'DELETE /api/users/{id}': 'Delete user (manager only)',
+                    'PUT /api/users/me/password': 'Change own password (requires old_password)',
+                    'PUT /api/users/{id}/password': 'Reset user password (manager only, no old_password required)'
                 },
                 'checkins': {
                     'GET /api/users/{id}/checkins': 'Get all check-ins for user',

@@ -369,3 +369,88 @@ delete_checkin_spec = {
         404: {"description": "Check-in not found"}
     }
 }
+
+update_password_spec = {
+    "tags": ["Users"],
+    "summary": "Update user password",
+    "description": "Update password for a specific user. Use 'me' as user_id to update own password (requires old_password). Managers can update any user's password without old_password.",
+    "security": [{"Bearer": []}],
+    "parameters": [
+        {
+            "name": "user_id",
+            "in": "path",
+            "required": True,
+            "type": "string",
+            "description": "User ID or 'me' for current user"
+        },
+        {
+            "name": "body",
+            "in": "body",
+            "required": True,
+            "schema": {
+                "type": "object",
+                "required": ["new_password"],
+                "properties": {
+                    "old_password": {
+                        "type": "string",
+                        "format": "password",
+                        "description": "Required when changing own password (user_id='me')",
+                        "example": "oldPassword123"
+                    },
+                    "new_password": {
+                        "type": "string",
+                        "format": "password",
+                        "description": "New password (minimum 6 characters)",
+                        "example": "newSecurePass456!",
+                        "minLength": 6
+                    }
+                }
+            }
+        }
+    ],
+    "responses": {
+        200: {
+            "description": "Password updated successfully",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "success": {"type": "boolean", "example": True},
+                    "message": {"type": "string", "example": "Password updated successfully"}
+                }
+            }
+        },
+        400: {
+            "description": "Bad request - Missing or invalid parameters",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "success": {"type": "boolean", "example": False},
+                    "message": {"type": "string", "example": "Old password required when changing own password"}
+                }
+            }
+        },
+        401: {
+            "description": "Unauthorized - Old password is incorrect",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "success": {"type": "boolean", "example": False},
+                    "message": {"type": "string", "example": "Old password is incorrect"}
+                }
+            }
+        },
+        403: {
+            "description": "Forbidden - Cannot change another user's password without manager role"
+        },
+        404: {
+            "description": "User not found",
+            "schema": {
+                "type": "object",
+                "properties": {
+                    "success": {"type": "boolean", "example": False},
+                    "message": {"type": "string", "example": "User not found"}
+                }
+            }
+        }
+    }
+}
